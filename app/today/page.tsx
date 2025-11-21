@@ -17,6 +17,8 @@ import {
   Gift,
   CircleHelp,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 type Expense = {
@@ -116,20 +118,20 @@ function formatAmount(value: number): string {
 function CategoryIcon({ category }: { category: string | null }) {
   const cat = category ?? '';
 
-  if (cat === '餐飲食品') return <Utensils className="w-6 h-6" />;
-  if (cat === '交通') return <Car className="w-6 h-6" />;
-  if (cat === '日用品') return <ShoppingBag className="w-6 h-6" />;
-  if (cat === '娛樂') return <Gamepad2 className="w-6 h-6" />;
-  if (cat === '醫療') return <Stethoscope className="w-6 h-6" />;
-  if (cat === '教育') return <GraduationCap className="w-6 h-6" />;
-  if (cat === '住房') return <Home className="w-6 h-6" />;
-  if (cat === '水電瓦斯') return <Lamp className="w-6 h-6" />;
-  if (cat === '通訊網路') return <Wifi className="w-6 h-6" />;
-  if (cat === '旅行') return <Plane className="w-6 h-6" />;
-  if (cat === '服飾衣物') return <Shirt className="w-6 h-6" />;
-  if (cat === '雜費') return <Gift className="w-6 h-6" />;
+  if (cat === '餐飲食品') return <Utensils className="w-8 h-8" />;
+  if (cat === '交通') return <Car className="w-8 h-8" />;
+  if (cat === '日用品') return <ShoppingBag className="w-8 h-8" />;
+  if (cat === '娛樂') return <Gamepad2 className="w-8 h-8" />;
+  if (cat === '醫療') return <Stethoscope className="w-8 h-8" />;
+  if (cat === '教育') return <GraduationCap className="w-8 h-8" />;
+  if (cat === '住房') return <Home className="w-8 h-8" />;
+  if (cat === '水電瓦斯') return <Lamp className="w-8 h-8" />;
+  if (cat === '通訊網路') return <Wifi className="w-8 h-8" />;
+  if (cat === '旅行') return <Plane className="w-8 h-8" />;
+  if (cat === '服飾衣物') return <Shirt className="w-8 h-8" />;
+  if (cat === '雜費') return <Gift className="w-8 h-8" />;
 
-  return <CircleHelp className="w-6 h-6" />;
+  return <CircleHelp className="w-8 h-8" />;
 }
 
 export default function TodayPage() {
@@ -294,38 +296,38 @@ export default function TodayPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="p-4 pb-20 max-w-md mx-auto w-full">
         {/* 上方：左側只有總金額；右側月曆按鈕 */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <div className="text-sm text-gray-500">總金額</div>
-            <div className={`text-2xl font-bold mt-1 ${headerAmountColor}`}>
+            <div className="text-lg text-gray-500">總金額</div>
+            <div className={`text-4xl font-bold mt-2 ${headerAmountColor}`}>
               {headerAmount}
             </div>
           </div>
 
           <a
             href="/calendar"
-            className="flex items-center justify-center w-10 h-10 border rounded-xl bg-white shadow-sm mt-1"
+            className="flex items-center justify-center w-12 h-12 border rounded-xl bg-white shadow-sm mt-1"
           >
-            <CalendarDays className="w-5 h-5" />
+            <CalendarDays className="w-6 h-6" />
           </a>
         </div>
 
         {/* 日期切換：← 日期 →（日期只出現在箭頭中間） */}
-        <div className="flex items-center justify-between mb-4 text-sm">
+        <div className="flex items-center justify-between mb-6">
           <button
             onClick={handlePrev}
-            className="px-3 py-2 border rounded-full bg-white shadow-sm"
+            className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100"
           >
-            ←
+            <ChevronLeft className="w-6 h-6 stroke-[3]" />
           </button>
 
-          <span className="font-medium">{headerDateLabel}</span>
+          <span className="text-xl font-bold">{headerDateLabel}</span>
 
           <button
             onClick={handleNext}
-            className="px-3 py-2 border rounded-full bg-white shadow-sm"
+            className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100"
           >
-            →
+            <ChevronRight className="w-6 h-6 stroke-[3]" />
           </button>
         </div>
 
@@ -393,7 +395,7 @@ export default function TodayPage() {
         )}
 
         {/* 記帳卡片列表 */}
-        <div className="space-y-2 mt-2 mb-4">
+        <div className="space-y-3 mt-2 mb-4">
           {data.map((item) => {
             const amount = item.amount ?? 0;
             let amountColorClass = 'text-gray-800';
@@ -406,36 +408,39 @@ export default function TodayPage() {
             return (
               <div
                 key={item.id}
-                className="flex items-stretch justify-between p-3 border rounded-lg bg-white shadow-sm"
+                className="flex items-stretch justify-between p-4 border rounded-xl bg-white shadow-sm"
               >
                 {/* 左側 icon + 文案 */}
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                     <CategoryIcon category={item.category} />
                   </div>
 
-                  <div className="text-xs flex flex-col">
-                    <div className="font-semibold text-gray-900 mb-0.5">
+                  <div className="text-base flex flex-col gap-1">
+                    <div className="font-bold text-lg text-gray-900">
                       {item.category || '未分類'}
                     </div>
-                    <div className="text-gray-400">
+                    <div className="text-gray-500 text-sm">
                       {item.time}（{weekday}）
                     </div>
-                    <div className="text-gray-600 line-clamp-1">
-                      {item.note || item.message}
-                    </div>
+                    {/* 如果有備註才顯示，避免空行太乾 */}
+                    {(item.note || item.message) && (
+                      <div className="text-gray-600 line-clamp-1">
+                        {item.note || item.message}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* 右側：金額 + 紀錄者（卡片右下） */}
-                <div className="flex flex-col items-end justify-between ml-2 text-xs">
+                <div className="flex flex-col items-end justify-center ml-2">
                   <div
-                    className={`text-sm font-bold ${amountColorClass} mb-1`}
+                    className={`text-2xl font-bold ${amountColorClass} mb-2`}
                   >
                     {amount !== 0 ? formatAmount(amount) : '-'}
                   </div>
-                  <div className="text-gray-400 mt-2">
-                    紀錄者：{displayUser}
+                  <div className="text-sm text-gray-400">
+                    {displayUser}
                   </div>
                 </div>
               </div>
