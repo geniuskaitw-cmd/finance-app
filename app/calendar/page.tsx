@@ -1,273 +1,547 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import {
+  CalendarDays,
+  Clock,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  List,
+  MoreVertical,
+  Edit,
+  Trash2,
+  X,
+  Check,
+} from 'lucide-react';
+
+/** --------------------------------------------------------
+ * 型別定義
+ * -------------------------------------------------------- */
+type CalendarEvent = {
+  id: number;
+  date: string; // YYYY-MM-DD
+  time: string | null; // HH:mm
+  title: string;
+  user_id: string;
+  is_private: boolean;
+  created_at?: string;
+};
+
+type Holiday = {
+  date: string; // YYYY-MM-DD (converted)
+  name: string;
+  isHoliday: boolean;
+};
 
 export default function CalendarPage() {
-  /** -----------------------------
-   * 基本日期資訊
-   * ----------------------------- */
-  // 解決 SSG 時間凍結問題：初始值設為 null，透過 useEffect 在前端更新
-  const [todayDate, setTodayDate] = useState<Date | null>(null);
+  /** --------------------------------------------------------
+   * 狀態管理
+   * -------------------------------------------------------- */
+  const [viewMode, setViewMode] = useState<'list' | 'month'>('list');
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [holidays, setHolidays] = useState<Record<string, Holiday>>({});
+  const [userMap, setUserMap] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+
+  // 動作選單狀態
+  const [actionItem, setActionItem] = useState<CalendarEvent | null>(null);
+  const [showActionMenu, setShowActionMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // 編輯表單狀態
+  const [editForm, setEditForm] = useState<{
+    date: string;
+    time: string;
+    title: string;
+  }>({ date: '', time: '', title: '' });
+
+  // 用於 List View 的滾動定位
+  const listRef = useRef<HTMLDivElement>(null);
+  const eventRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // 月曆模式當前瀏覽的年月
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   // 取得台北時間 YYYY-MM-DD
-  function getTaipeiDateStr(d: Date) {
-    return d.toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 10);
+  function getTodayStr() {
+    return new Date()
+      .toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' })
+      .slice(0, 10);
   }
+  const todayStr = getTodayStr();
 
-  const [current, setCurrent] = useState(() => {
-    // 這裡初始值可能仍是 Build Time，但在 useEffect 會被校正
-    const now = new Date();
-    return {
-      year: now.getFullYear(),
-      month: now.getMonth(), // 0~11
-    };
-  });
-
+  /** --------------------------------------------------------
+   * 資料讀取
+   * -------------------------------------------------------- */
   useEffect(() => {
-    // 確保在 Client 端執行時，取得當下真正的時間
-    const now = new Date();
-    setTodayDate(now);
-    
-    // 校正當前月份（若使用者剛好跨月開啟）
-    setCurrent({
-      year: now.getFullYear(),
-      month: now.getMonth(),
-    });
+    fetchAllData();
+    fetchUserNames();
+    const y = new Date().getFullYear();
+    fetchHolidays(y);
+    fetchHolidays(y + 1);
   }, []);
 
-  const todayStr = todayDate ? getTaipeiDateStr(todayDate) : '';
+  async function fetchUserNames() {
+    const { data } = await supabase.from('user_names').select('user_id, display_name');
+    if (data) {
+      const map: Record<string, string> = {};
+      data.forEach((u: any) => (map[u.user_id] = u.display_name));
+      setUserMap(map);
+    }
+  }
 
-  /** -----------------------------
-   * 本月每日金額總和
-   * daySums = { '2025-11-19': 600, ... }
-   * ----------------------------- */
-  const [daySums, setDaySums] = useState<Record<string, number>>({});
-  const [monthTotal, setMonthTotal] = useState(0);
-
-  /** -----------------------------
-   * 本月預算（來自 Supabase 最新一筆）
-   * ----------------------------- */
-  const [budget, setBudget] = useState<number>(0);
-
-  async function loadBudget() {
+  async function fetchAllData() {
+    setLoading(true);
+    // 讀取 Calendar 表，過濾 private
     const { data, error } = await supabase
-      .from('budgets')
-      .select('budget')
-      .order('id', { ascending: false }) // 最新一筆
-      .limit(1);
+      .from('calendar')
+      .select('*')
+      .eq('is_private', false)
+      .order('date', { ascending: true })
+      .order('time', { ascending: true });
 
     if (error) {
-      console.error('讀取預算錯誤：', error);
+      console.error('讀取行事曆失敗', error);
+    } else {
+      setEvents(data || []);
+    }
+    setLoading(false);
+  }
+
+  // 抓取台灣國定假日
+  async function fetchHolidays(year: number) {
+    try {
+      const res = await fetch(
+        `https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year}.json`
+      );
+      if (!res.ok) return;
+      const list = await res.json();
+      const map: Record<string, Holiday> = {};
+      list.forEach((item: any) => {
+        let dStr = item.date; // 20250101
+        if (dStr && !dStr.includes('-') && dStr.length === 8) {
+          dStr = `${dStr.slice(0, 4)}-${dStr.slice(4, 6)}-${dStr.slice(6, 8)}`;
+        }
+        if (item.isHoliday) {
+            map[dStr] = {
+            date: dStr,
+            name: item.description || item.name || '國定假日',
+            isHoliday: true,
+            };
+        }
+      });
+      setHolidays((prev) => ({ ...prev, ...map }));
+    } catch (e) {
+      console.warn('無法讀取假日資料', e);
+    }
+  }
+
+  /** --------------------------------------------------------
+   * 動作處理：刪除與編輯
+   * -------------------------------------------------------- */
+  function handleOpenAction(item: CalendarEvent) {
+    setActionItem(item);
+    setShowActionMenu(true);
+  }
+
+  function closeAllModals() {
+    setActionItem(null);
+    setShowActionMenu(false);
+    setShowDeleteConfirm(false);
+    setShowEditModal(false);
+  }
+
+  function onClickDelete() {
+    setShowActionMenu(false);
+    setShowDeleteConfirm(true);
+  }
+
+  async function doDelete() {
+    if (!actionItem) return;
+    const { error, data } = await supabase.from('calendar').delete().eq('id', actionItem.id).select();
+    if (error) {
+      alert('刪除失敗：' + error.message);
+    } else if (!data || data.length === 0) {
+      alert('刪除失敗：權限不足或資料不存在 (RLS)');
+    } else {
+      fetchAllData();
+    }
+    closeAllModals();
+  }
+
+  function onClickEdit() {
+    if (!actionItem) return;
+    setEditForm({
+      date: actionItem.date,
+      time: actionItem.time || '',
+      title: actionItem.title,
+    });
+    setShowActionMenu(false);
+    setShowEditModal(true);
+  }
+
+  async function doUpdate() {
+    if (!actionItem) return;
+    if (!editForm.date || !editForm.title) {
+      alert('日期與標題為必填');
       return;
     }
 
-    if (data && data.length > 0) {
-      setBudget(data[0].budget);
+    const { error, data } = await supabase
+      .from('calendar')
+      .update({
+        date: editForm.date,
+        time: editForm.time || null,
+        title: editForm.title,
+      })
+      .eq('id', actionItem.id)
+      .select();
+
+    if (error) {
+      alert('更新失敗：' + error.message);
+    } else if (!data || data.length === 0) {
+      alert('更新失敗：權限不足或資料不存在 (RLS)');
     } else {
-      setBudget(0);
+      fetchAllData();
     }
+    closeAllModals();
   }
 
-  /** -----------------------------
-   * 抓取本月所有記帳資料
-   * ----------------------------- */
-  async function loadMonthData(year: number, month: number) {
-    const yyyyMm = `${year}-${String(month + 1).padStart(2, '0')}`;
-
-    const { data, error } = await supabase
-      .from('expenses')
-      .select('*')
-      .like('time', `${yyyyMm}%`);
-
-    if (error) return console.error(error);
-
-    const sums: Record<string, number> = {};
-    let total = 0;
-
-    (data || []).forEach((item) => {
-      const d = item.time;
-      const amt = item.amount ?? 0;
-      if (!sums[d]) sums[d] = 0;
-      sums[d] += amt;
-      total += amt;
-    });
-
-    setDaySums(sums);
-    setMonthTotal(total);
+  /** --------------------------------------------------------
+   * 互動邏輯
+   * -------------------------------------------------------- */
+  function goToListAndScroll(dateStr: string) {
+    setViewMode('list');
+    setTimeout(() => {
+      const target = eventRefs.current[dateStr];
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        const futureEvent = events.find((e) => e.date >= dateStr);
+        if (futureEvent && eventRefs.current[futureEvent.date]) {
+            eventRefs.current[futureEvent.date]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    }, 100);
   }
 
-  /** -----------------------------
-   * 月曆格（含空白）
-   * ----------------------------- */
-  function getCalendarMatrix(y: number, m: number) {
-    const firstDay = new Date(y, m, 1);
-    const weekday = (firstDay.getDay() + 6) % 7; // 週一=0
-    const days = new Date(y, m + 1, 0).getDate();
+  /** --------------------------------------------------------
+   * 渲染組件：列表模式
+   * -------------------------------------------------------- */
+  function renderListView() {
+    const todayEvents = events.filter(e => e.date === todayStr);
+    const sortedEvents = events;
 
-    const list: (number | null)[] = [];
-    for (let i = 0; i < weekday; i++) list.push(null);
-    for (let d = 1; d <= days; d++) list.push(d);
-
-    return list;
-  }
-
-  /** -----------------------------
-   * 月份切換
-   * ----------------------------- */
-  function prevMonth() {
-    let y = current.year;
-    let m = current.month - 1;
-    if (m < 0) {
-      m = 11;
-      y -= 1;
-    }
-    setCurrent({ year: y, month: m });
-    loadMonthData(y, m);
-    loadBudget();
-  }
-
-  function nextMonth() {
-    let y = current.year;
-    let m = current.month + 1;
-    if (m > 11) {
-      m = 0;
-      y += 1;
-    }
-    setCurrent({ year: y, month: m });
-    loadMonthData(y, m);
-    loadBudget();
-  }
-
-  /** -----------------------------
-   * 初次載入
-   * ----------------------------- */
-  useEffect(() => {
-    loadMonthData(current.year, current.month);
-    loadBudget(); // 讀取最新預算
-  }, []);
-
-  /** -----------------------------
-   * helper：金額顏色
-   * ----------------------------- */
-  function amountColor(n: number) {
-    if (n > 0) return 'text-green-600';
-    if (n < 0) return 'text-red-500';
-    return 'text-gray-400';
-  }
-
-  return (
-    <div className="p-4 max-w-md mx-auto">
-      {/* 年月 + 上下月切換 */}
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={prevMonth}
-          className="px-3 py-1 border rounded-lg bg-white shadow-sm text-sm"
-        >
-          ←
-        </button>
-
-        <div className="text-lg font-bold">
-          {current.year} 年 {current.month + 1} 月
+    return (
+      <div className="pb-20 space-y-4" ref={listRef}>
+        {/* 今天狀態區塊 */}
+        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+          <h2 className="text-lg font-bold text-blue-900 mb-2">
+            今天是 {todayStr}
+          </h2>
+          {todayEvents.length > 0 ? (
+            <div className="text-blue-700">
+              今日有 {todayEvents.length} 個行程
+            </div>
+          ) : (
+            <div className="text-gray-500">本日無行程</div>
+          )}
         </div>
 
-        <button
-          onClick={nextMonth}
-          className="px-3 py-1 border rounded-lg bg-white shadow-sm text-sm"
-        >
-          →
-        </button>
-      </div>
+        {sortedEvents.length === 0 && (
+            <div className="text-center text-gray-400 py-10">尚無任何行程記錄</div>
+        )}
 
-      {/* 星期列 */}
-      <div className="grid grid-cols-7 text-center text-sm font-semibold text-gray-600 mb-2">
-        <div>一</div>
-        <div>二</div>
-        <div>三</div>
-        <div>四</div>
-        <div>五</div>
-        <div>六</div>
-        <div>日</div>
-      </div>
+        {sortedEvents.map((evt) => {
+            const isPast = evt.date < todayStr;
+            const isToday = evt.date === todayStr;
+            const userName = userMap[evt.user_id] || '未知';
 
-      {/* 月曆格 */}
-      <div className="grid grid-cols-7 gap-2 text-center text-sm">
-        {getCalendarMatrix(current.year, current.month).map((day, idx) => {
-          if (!day) {
             return (
-              <div
-                key={idx}
-                className="h-12 border rounded-lg bg-gray-50 shadow-sm"
-              ></div>
-            );
-          }
-
-          const dateStr = `${current.year}-${String(
-            current.month + 1,
-          ).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-          const sum = daySums[dateStr] ?? 0;
-
-          const isToday =
-            todayDate &&
-            dateStr === todayStr &&
-            current.year === todayDate.getFullYear() &&
-            current.month === todayDate.getMonth();
-
-          return (
-            <Link
-              key={idx}
-              href={`/today?date=${dateStr}`}
-              className={`h-12 flex flex-col items-center justify-center border rounded-lg shadow-sm
-                ${
-                  isToday
-                    ? 'bg-blue-600 border-blue-700 text-white font-bold'
-                    : 'bg-white'
-                }
-              `}
-            >
-              <div className="leading-none">{day}</div>
-
-              {sum !== 0 && (
                 <div
-                  className={`text-[10px] leading-none mt-0.5 ${
-                    isToday ? 'text-white' : amountColor(sum)
-                  }`}
+                    key={evt.id}
+                    ref={(el) => {
+                        if (el && (!eventRefs.current[evt.date] || eventRefs.current[evt.date] === el)) {
+                             eventRefs.current[evt.date] = el;
+                        }
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      handleOpenAction(evt);
+                    }}
+                    className={`relative p-5 rounded-2xl border shadow-sm flex flex-col gap-3 transition-all select-none
+                        ${isToday ? 'bg-blue-50/50 border-blue-500 ring-1 ring-blue-500' : 'bg-white'}
+                        ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}
+                    `}
                 >
-                  {sum}
+                    {/* 右上角更多按鈕 */}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenAction(evt);
+                      }}
+                      className="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full z-10"
+                    >
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+
+                    {/* 內容區塊 */}
+                    <div className="pr-8">
+                        {/* 日期與時間 - 加大字體 */}
+                        <div className="flex items-center flex-wrap gap-3 mb-2">
+                            <div className={`text-xl font-bold ${isToday ? 'text-blue-700' : 'text-gray-900'}`}>
+                                {evt.date}
+                            </div>
+                            <div className={`flex items-center px-2 py-1 rounded-lg text-lg font-bold
+                                ${isToday ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                                <Clock className="w-5 h-5 mr-1.5" />
+                                {evt.time ? evt.time.slice(0, 5) : '全天'}
+                            </div>
+                        </div>
+                        
+                        {/* 標題 */}
+                        <div className="text-gray-800 text-lg font-medium leading-relaxed break-words">
+                            {evt.title || '(無標題)'}
+                        </div>
+                    </div>
+
+                    {/* 右下角紀錄者 */}
+                    <div className="flex justify-end mt-auto pt-2 border-t border-gray-100/50">
+                        <span className="text-sm text-gray-400 font-medium">
+                            {userName}
+                        </span>
+                    </div>
                 </div>
-              )}
-            </Link>
-          );
+            );
         })}
       </div>
+    );
+  }
 
-      {/* 底部三欄 */}
-      <div className="mt-6 p-4 bg-white shadow-sm border rounded-lg text-sm space-y-2">
-        <div className="flex justify-between">
-          <span className="text-gray-600">本月預算</span>
-          <span className="font-semibold">{budget || 0}</span>
+  /** --------------------------------------------------------
+   * 渲染組件：月曆模式
+   * -------------------------------------------------------- */
+  function renderMonthView() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth(); // 0-11
+
+    const firstDay = new Date(year, month, 1);
+    const startDayOfWeek = (firstDay.getDay() + 6) % 7; // 週一當作 0
+    const startDayIndex = firstDay.getDay(); // 0=Sun
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const cells = [];
+    for (let i = 0; i < startDayIndex; i++) {
+      cells.push({ type: 'empty', key: `empty-${i}` });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      cells.push({ type: 'day', val: d, dateStr, key: dateStr });
+    }
+
+    return (
+      <div>
+        {/* 月曆 Header */}
+        <div className="flex items-center justify-between mb-4 bg-white p-3 rounded-xl shadow-sm">
+            <button 
+                onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
+                className="p-2 hover:bg-gray-100 rounded-full"
+            >
+                <ChevronLeft />
+            </button>
+            <div className="font-bold text-xl">
+                {year} 年 {month + 1} 月
+            </div>
+            <button 
+                onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
+                className="p-2 hover:bg-gray-100 rounded-full"
+            >
+                <ChevronRight />
+            </button>
         </div>
 
-        <div className="flex justify-between">
-          <span className="text-gray-600">目前花費</span>
-          <span className={`font-semibold ${amountColor(monthTotal)}`}>
-            {monthTotal}
-          </span>
+        {/* 星期 Header */}
+        <div className="grid grid-cols-7 text-center mb-2 font-semibold text-gray-500">
+            <div className="text-red-500">日</div>
+            <div>一</div>
+            <div>二</div>
+            <div>三</div>
+            <div>四</div>
+            <div>五</div>
+            <div className="text-green-600">六</div>
         </div>
 
-        <div className="flex justify-between">
-          <span className="text-gray-600">剩餘金額</span>
-          <span
-            className={`font-bold ${
-              budget - monthTotal < 0 ? 'text-red-600' : 'text-gray-900'
-            }`}
-          >
-            {budget - monthTotal}
-          </span>
+        {/* 格子 */}
+        <div className="grid grid-cols-7 gap-1">
+            {cells.map((cell: any) => {
+                if (cell.type === 'empty') {
+                    return <div key={cell.key} className="h-20" />;
+                }
+
+                const dayEvents = events.filter(e => e.date === cell.dateStr);
+                const isHoliday = holidays[cell.dateStr]?.isHoliday;
+                const isToday = cell.dateStr === todayStr;
+
+                return (
+                    <div
+                        key={cell.key}
+                        onClick={() => goToListAndScroll(cell.dateStr)}
+                        className={`
+                            h-20 border rounded-lg flex flex-col items-center justify-start pt-2 cursor-pointer relative overflow-hidden transition-all
+                            ${isHoliday ? 'bg-red-50 border-red-100' : 'bg-white hover:bg-gray-50'}
+                            ${isToday ? 'ring-2 ring-blue-500' : ''}
+                        `}
+                    >
+                        <span className={`text-sm font-medium ${isHoliday ? 'text-red-600' : 'text-gray-700'}`}>
+                            {cell.val}
+                        </span>
+                        
+                        {isHoliday && (
+                            <span className="text-[10px] text-red-400 transform scale-75 truncate max-w-full">
+                                {holidays[cell.dateStr].name}
+                            </span>
+                        )}
+
+                        <div className="flex gap-1 mt-auto mb-2 flex-wrap justify-center px-1">
+                            {dayEvents.map((_, i) => (
+                                <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            ))}
+                        </div>
+                    </div>
+                );
+            })}
         </div>
       </div>
+    );
+  }
+
+  /** --------------------------------------------------------
+   * 主渲染
+   * -------------------------------------------------------- */
+  useEffect(() => {
+    if (viewMode === 'list' && !loading && events.length > 0) {
+        setTimeout(() => {
+             eventRefs.current = {}; 
+             const target = eventRefs.current[todayStr];
+             if (target) {
+                 target.scrollIntoView({ behavior: 'auto', block: 'start' });
+             } else {
+                 const future = events.find(e => e.date > todayStr);
+                 if (future && eventRefs.current[future.date]) {
+                     eventRefs.current[future.date]?.scrollIntoView({ behavior: 'auto', block: 'start' });
+                 }
+             }
+        }, 300);
+    }
+  }, [loading, viewMode]);
+
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="p-4 max-w-md mx-auto w-full flex-1 flex flex-col">
+        
+        {/* 頂部切換按鈕 */}
+        <div className="flex justify-end mb-4">
+            <button
+                onClick={() => setViewMode(viewMode === 'list' ? 'month' : 'list')}
+                className="flex items-center gap-2 px-4 py-2 bg-white border rounded-full shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-100"
+            >
+                {viewMode === 'list' ? (
+                    <>
+                        <CalendarDays className="w-4 h-4" />
+                        切換月曆模式
+                    </>
+                ) : (
+                    <>
+                        <List className="w-4 h-4" />
+                        切換列表模式
+                    </>
+                )}
+            </button>
+        </div>
+
+        {loading ? (
+            <div className="flex-1 flex items-center justify-center text-gray-400">
+                載入行程中...
+            </div>
+        ) : (
+            <>
+                {viewMode === 'list' && renderListView()}
+                {viewMode === 'month' && renderMonthView()}
+            </>
+        )}
+      </div>
+
+      {/* ----------- Modals (移到最外層) ----------- */}
+
+      {/* 動作選單 */}
+      {showActionMenu && actionItem && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={closeAllModals}>
+          <div className="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-xl animate-in slide-in-from-bottom-10 fade-in duration-200" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b text-center font-bold text-gray-700">選擇操作</div>
+            <div className="flex flex-col">
+              <button onClick={onClickEdit} className="flex items-center justify-center gap-2 p-4 hover:bg-gray-50 border-b text-blue-600 font-medium">
+                <Edit className="w-5 h-5" /> 編輯行程
+              </button>
+              <button onClick={onClickDelete} className="flex items-center justify-center gap-2 p-4 hover:bg-gray-50 text-red-600 font-medium">
+                <Trash2 className="w-5 h-5" /> 刪除行程
+              </button>
+            </div>
+            <div className="p-2 bg-gray-50">
+              <button onClick={closeAllModals} className="w-full py-3 bg-white rounded-xl border shadow-sm font-bold text-gray-700">
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 刪除確認 */}
+      {showDeleteConfirm && actionItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
+          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">確定要刪除嗎？</h3>
+            <div className="flex gap-3 mt-6">
+              <button onClick={closeAllModals} className="flex-1 py-2.5 border rounded-xl font-medium text-gray-700 hover:bg-gray-50">取消</button>
+              <button onClick={doDelete} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700">確定刪除</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 編輯視窗 */}
+      {showEditModal && actionItem && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm sm:p-6">
+          <div className="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl p-5 shadow-xl h-[70vh] sm:h-auto flex flex-col">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-xl font-bold text-gray-900">編輯行程</h3>
+              <button onClick={closeAllModals} className="p-1 text-gray-400 hover:bg-gray-100 rounded-full"><X className="w-6 h-6" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">日期</label>
+                <input type="date" value={editForm.date} onChange={e => setEditForm({...editForm, date: e.target.value})} className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">時間 (選填)</label>
+                <input type="time" value={editForm.time} onChange={e => setEditForm({...editForm, time: e.target.value})} className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">項目 (標題)</label>
+                <input type="text" value={editForm.title} onChange={e => setEditForm({...editForm, title: e.target.value})} className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white" />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6 pt-4 border-t">
+              <button onClick={closeAllModals} className="flex-1 py-3 border rounded-xl font-medium text-gray-700 hover:bg-gray-50">取消</button>
+              <button onClick={doUpdate} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2"><Check className="w-5 h-5" /> 儲存變更</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
