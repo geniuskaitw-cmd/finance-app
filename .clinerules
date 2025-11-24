@@ -1,0 +1,4 @@
+# System Instructions
+My environment is Windows PowerShell.
+Please DO NOT use the "&&" operator for chaining commands, as it causes errors.
+Always use ";" to separate commands, or execute them one by one.

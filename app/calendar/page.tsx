@@ -8,13 +8,36 @@ export default function CalendarPage() {
   /** -----------------------------
    * 基本日期資訊
    * ----------------------------- */
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  // 解決 SSG 時間凍結問題：初始值設為 null，透過 useEffect 在前端更新
+  const [todayDate, setTodayDate] = useState<Date | null>(null);
 
-  const [current, setCurrent] = useState(() => ({
-    year: today.getFullYear(),
-    month: today.getMonth(), // 0~11
-  }));
+  // 取得台北時間 YYYY-MM-DD
+  function getTaipeiDateStr(d: Date) {
+    return d.toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 10);
+  }
+
+  const [current, setCurrent] = useState(() => {
+    // 這裡初始值可能仍是 Build Time，但在 useEffect 會被校正
+    const now = new Date();
+    return {
+      year: now.getFullYear(),
+      month: now.getMonth(), // 0~11
+    };
+  });
+
+  useEffect(() => {
+    // 確保在 Client 端執行時，取得當下真正的時間
+    const now = new Date();
+    setTodayDate(now);
+    
+    // 校正當前月份（若使用者剛好跨月開啟）
+    setCurrent({
+      year: now.getFullYear(),
+      month: now.getMonth(),
+    });
+  }, []);
+
+  const todayStr = todayDate ? getTaipeiDateStr(todayDate) : '';
 
   /** -----------------------------
    * 本月每日金額總和
@@ -187,9 +210,10 @@ export default function CalendarPage() {
           const sum = daySums[dateStr] ?? 0;
 
           const isToday =
+            todayDate &&
             dateStr === todayStr &&
-            current.year === today.getFullYear() &&
-            current.month === today.getMonth();
+            current.year === todayDate.getFullYear() &&
+            current.month === todayDate.getMonth();
 
           return (
             <Link
