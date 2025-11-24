@@ -272,44 +272,43 @@ export default function CalendarPage() {
                       e.preventDefault();
                       handleOpenAction(evt);
                     }}
-                    className={`relative p-5 rounded-2xl border shadow-sm flex flex-col gap-3 transition-all select-none
+                    className={`relative p-5 rounded-2xl border shadow-sm flex flex-col justify-between min-h-[120px] transition-all select-none
                         ${isToday ? 'bg-blue-50/50 border-blue-500 ring-1 ring-blue-500' : 'bg-white'}
                         ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}
                     `}
                 >
-                    {/* 右上角更多按鈕 */}
+                    {/* 右上角更多按鈕 (絕對定位以免破壞版面) */}
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         handleOpenAction(evt);
                       }}
-                      className="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full z-10"
+                      className="absolute top-2 right-2 p-1 text-gray-300 hover:text-gray-600 hover:bg-gray-100/50 rounded-full z-10"
                     >
                       <MoreVertical className="w-5 h-5" />
                     </button>
 
-                    {/* 內容區塊 */}
-                    <div className="pr-8">
-                        {/* 日期與時間 - 加大字體 */}
-                        <div className="flex items-center flex-wrap gap-3 mb-2">
+                    <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-start pr-8">
                             <div className={`text-xl font-bold ${isToday ? 'text-blue-700' : 'text-gray-900'}`}>
                                 {evt.date}
                             </div>
-                            <div className={`flex items-center px-2 py-1 rounded-lg text-lg font-bold
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                             <div className={`flex items-center px-2 py-1 rounded-lg text-lg font-bold
                                 ${isToday ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
                                 <Clock className="w-5 h-5 mr-1.5" />
                                 {evt.time ? evt.time.slice(0, 5) : '全天'}
                             </div>
                         </div>
-                        
-                        {/* 標題 */}
-                        <div className="text-gray-800 text-lg font-medium leading-relaxed break-words">
+
+                        <div className="text-gray-800 text-xl font-bold leading-relaxed mt-1">
                             {evt.title || '(無標題)'}
                         </div>
                     </div>
 
-                    {/* 右下角紀錄者 */}
-                    <div className="flex justify-end mt-auto pt-2 border-t border-gray-100/50">
+                    <div className="flex justify-end mt-4 pt-3 border-t border-gray-200">
                         <span className="text-sm text-gray-400 font-medium">
                             {userName}
                         </span>
@@ -346,26 +345,26 @@ export default function CalendarPage() {
     return (
       <div>
         {/* 月曆 Header */}
-        <div className="flex items-center justify-between mb-4 bg-white p-3 rounded-xl shadow-sm">
+        <div className="flex items-center justify-between mb-2 bg-white p-2 rounded-xl shadow-sm">
             <button 
                 onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
                 className="p-2 hover:bg-gray-100 rounded-full"
             >
-                <ChevronLeft />
+                <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="font-bold text-xl">
+            <div className="font-bold text-lg">
                 {year} 年 {month + 1} 月
             </div>
             <button 
                 onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
                 className="p-2 hover:bg-gray-100 rounded-full"
             >
-                <ChevronRight />
+                <ChevronRight className="w-5 h-5" />
             </button>
         </div>
 
         {/* 星期 Header */}
-        <div className="grid grid-cols-7 text-center mb-2 font-semibold text-gray-500">
+        <div className="grid grid-cols-7 text-center mb-1 font-semibold text-gray-500 text-sm">
             <div className="text-red-500">日</div>
             <div>一</div>
             <div>二</div>
@@ -376,10 +375,10 @@ export default function CalendarPage() {
         </div>
 
         {/* 格子 */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5">
             {cells.map((cell: any) => {
                 if (cell.type === 'empty') {
-                    return <div key={cell.key} className="h-20" />;
+                    return <div key={cell.key} className="h-14" />;
                 }
 
                 const dayEvents = events.filter(e => e.date === cell.dateStr);
@@ -391,7 +390,7 @@ export default function CalendarPage() {
                         key={cell.key}
                         onClick={() => goToListAndScroll(cell.dateStr)}
                         className={`
-                            h-20 border rounded-lg flex flex-col items-center justify-start pt-2 cursor-pointer relative overflow-hidden transition-all
+                            h-14 border rounded-lg flex flex-col items-center justify-start pt-1 cursor-pointer relative overflow-hidden transition-all
                             ${isHoliday ? 'bg-red-50 border-red-100' : 'bg-white hover:bg-gray-50'}
                             ${isToday ? 'ring-2 ring-blue-500' : ''}
                         `}
@@ -401,12 +400,12 @@ export default function CalendarPage() {
                         </span>
                         
                         {isHoliday && (
-                            <span className="text-[10px] text-red-400 transform scale-75 truncate max-w-full">
+                            <span className="text-[9px] text-red-400 transform scale-90 truncate max-w-full">
                                 {holidays[cell.dateStr].name}
                             </span>
                         )}
 
-                        <div className="flex gap-1 mt-auto mb-2 flex-wrap justify-center px-1">
+                        <div className="flex gap-0.5 mt-auto mb-1 flex-wrap justify-center px-0.5">
                             {dayEvents.map((_, i) => (
                                 <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                             ))}

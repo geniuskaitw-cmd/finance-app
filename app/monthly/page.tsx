@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function MonthlyPage() {
   /** -----------------------------
@@ -160,23 +161,23 @@ export default function MonthlyPage() {
   return (
     <div className="p-4 max-w-md mx-auto">
       {/* 年月 + 上下月切換 */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-6">
         <button
           onClick={prevMonth}
-          className="px-3 py-1 border rounded-lg bg-white shadow-sm text-sm"
+          className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100"
         >
-          ←
+          <ChevronLeft className="w-6 h-6 stroke-[3]" />
         </button>
 
-        <div className="text-lg font-bold">
+        <div className="text-xl font-bold">
           {current.year} 年 {current.month + 1} 月
         </div>
 
         <button
           onClick={nextMonth}
-          className="px-3 py-1 border rounded-lg bg-white shadow-sm text-sm"
+          className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100"
         >
-          →
+          <ChevronRight className="w-6 h-6 stroke-[3]" />
         </button>
       </div>
 
