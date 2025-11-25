@@ -523,15 +523,30 @@ export default function CalendarPage() {
             <div className="flex-1 overflow-y-auto space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">日期</label>
-                <input type="date" value={editForm.date} onChange={e => setEditForm({...editForm, date: e.target.value})} className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white" />
+                <input 
+                  type="date" 
+                  value={editForm.date} 
+                  onChange={e => setEditForm({...editForm, date: e.target.value})} 
+                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all min-w-0 appearance-none" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">時間 (選填)</label>
-                <input type="time" value={editForm.time} onChange={e => setEditForm({...editForm, time: e.target.value})} className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white" />
+                <input 
+                  type="time" 
+                  value={editForm.time} 
+                  onChange={e => setEditForm({...editForm, time: e.target.value})} 
+                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all min-w-0 appearance-none" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">項目 (標題)</label>
-                <input type="text" value={editForm.title} onChange={e => setEditForm({...editForm, title: e.target.value})} className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white" />
+                <input 
+                  type="text" 
+                  value={editForm.title} 
+                  onChange={e => setEditForm({...editForm, title: e.target.value})} 
+                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all" 
+                />
               </div>
             </div>
             <div className="flex gap-3 mt-6 pt-4 border-t">
