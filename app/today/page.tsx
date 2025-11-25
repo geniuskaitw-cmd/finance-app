@@ -528,7 +528,7 @@ export default function TodayPage() {
                   e.preventDefault();
                   handleOpenAction(item);
                 }}
-                className="relative flex items-stretch justify-between p-4 border rounded-xl bg-white shadow-sm group select-none"
+                className="relative flex items-center p-4 pl-6 border rounded-xl bg-white shadow-sm group select-none"
               >
                 {/* 左上角更多按鈕 */}
                 <button 
@@ -541,36 +541,36 @@ export default function TodayPage() {
                   <MoreVertical className="w-4 h-4" />
                 </button>
 
-                {/* 左側 icon + 文案 */}
-                <div className="flex items-center gap-4 flex-1 overflow-hidden pl-2">
-                  <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                    <CategoryIcon category={item.category} />
-                  </div>
-
-                  <div className="text-base flex flex-col gap-1 min-w-0">
-                    <div className="font-bold text-lg text-gray-900 truncate">
-                      {item.category || '未分類'}
-                    </div>
-                    <div className="text-gray-500 text-sm">
-                      {item.time}（{weekday}）
-                    </div>
-                    {(item.note || item.message) && (
-                      <div className="text-gray-600 line-clamp-1 text-sm">
-                        {item.note || item.message}
-                      </div>
-                    )}
-                  </div>
+                {/* Icon */}
+                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mr-4">
+                  <CategoryIcon category={item.category} />
                 </div>
 
-                {/* 右側：金額 + 紀錄者 + 操作按鈕 */}
-                <div className="flex flex-col items-end justify-center ml-2 shrink-0">
-                  <div
-                    className={`text-2xl font-bold ${amountColorClass} mb-2`}
-                  >
-                    {amount !== 0 ? formatAmount(amount) : '-'}
+                {/* Content */}
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  {/* Row 1: Category + Amount */}
+                  <div className="flex justify-between items-start">
+                    <div className="font-bold text-lg text-gray-900 truncate pr-2">
+                      {item.category || '未分類'}
+                    </div>
+                    <div className={`text-2xl font-bold ${amountColorClass} leading-none whitespace-nowrap`}>
+                      {amount !== 0 ? formatAmount(amount) : '-'}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-400 mb-2">
-                    {displayUser}
+
+                  {/* Row 2: Time */}
+                  <div className="text-gray-500 text-sm">
+                    {item.time}（{weekday}）
+                  </div>
+
+                  {/* Row 3: Note + User */}
+                  <div className="flex justify-between items-end min-h-[1.25rem]">
+                    <div className="text-gray-600 line-clamp-1 text-sm flex-1 pr-2">
+                      {item.note || item.message}
+                    </div>
+                    <div className="text-sm text-gray-400 whitespace-nowrap">
+                      {displayUser}
+                    </div>
                   </div>
                 </div>
               </div>

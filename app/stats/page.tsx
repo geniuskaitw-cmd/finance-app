@@ -185,14 +185,15 @@ function TrendChart({ data, category }: { data: { month: string, total: number }
 
   if (data.length === 0) return <div className="h-48 flex items-center justify-center text-gray-400">無資料</div>;
 
-  // 為避免資料過多擠在一起，設定最小寬度並允許橫向捲動
   return (
-    <div className="w-full overflow-x-auto pb-2 touch-pan-x">
-        <div className="flex items-end h-48 gap-3 pt-6 px-1" style={{ minWidth: `${Math.max(300, data.length * 60)}px` }}>
+    <div className="w-full overflow-x-auto pb-2 touch-pan-x no-scrollbar">
+        {/* min-w-max ensures container expands to fit all shrunk-0 children */}
+        <div className="flex items-end h-48 gap-4 pt-6 px-2 min-w-max">
         {data.map((item, i) => {
             const heightPercent = (item.total / max) * 100;
             return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2 group min-w-[30px]">
+            // shrink-0 prevents bars from being squished
+            <div key={i} className="flex flex-col items-center gap-2 group shrink-0 w-[40px]">
                 <div className="text-[10px] text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity font-mono mb-1 absolute -mt-6">
                     ${item.total}
                 </div>
@@ -468,13 +469,15 @@ export default function StatsPage() {
                         value={trendRange.start}
                         onChange={e => {
                             const newStart = e.target.value;
+                            if (!newStart) return;
+                            
                             setTrendRange(p => {
-                                // 限制最多 12 個月
-                                const s = new Date(newStart);
-                                const e = new Date(p.end);
+                                // 加 -01 確保跨瀏覽器解析正確
+                                const s = new Date(newStart + '-01');
+                                const e = new Date(p.end + '-01');
                                 const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
-                                if (months > 11) {
-                                    // 如果超過 12 個月，自動調整結束日期
+                                
+                                if (months > 11 || months < 0) {
                                     const newEnd = new Date(s);
                                     newEnd.setMonth(newEnd.getMonth() + 11);
                                     return { start: newStart, end: newEnd.toISOString().slice(0, 7) };
@@ -492,13 +495,14 @@ export default function StatsPage() {
                         value={trendRange.end}
                         onChange={e => {
                             const newEnd = e.target.value;
+                            if (!newEnd) return;
+
                             setTrendRange(p => {
-                                // 限制最多 12 個月
-                                const s = new Date(p.start);
-                                const e = new Date(newEnd);
+                                const s = new Date(p.start + '-01');
+                                const e = new Date(newEnd + '-01');
                                 const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
-                                if (months > 11) {
-                                    // 如果超過 12 個月，自動調整開始日期
+                                
+                                if (months > 11 || months < 0) {
                                     const newStart = new Date(e);
                                     newStart.setMonth(newStart.getMonth() - 11);
                                     return { start: newStart.toISOString().slice(0, 7), end: newEnd };
