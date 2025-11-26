@@ -182,27 +182,39 @@ function DonutChart({ data, total }: { data: CategoryStat[], total: number }) {
 function TrendChart({ data, category }: { data: { month: string, total: number }[], category: string }) {
   const max = Math.max(...data.map(d => d.total), 1);
   const color = getCategoryColor(category);
+  const [activeBar, setActiveBar] = useState<number | null>(null);
 
   if (data.length === 0) return <div className="h-48 flex items-center justify-center text-gray-400">無資料</div>;
 
   return (
     <div className="w-full overflow-x-auto pb-2 touch-pan-x no-scrollbar">
         {/* min-w-max ensures container expands to fit all shrunk-0 children */}
-        <div className="flex items-end h-48 gap-4 pt-6 px-2 min-w-max">
+        <div className="flex items-end gap-4 px-2 pt-8 min-w-max">
         {data.map((item, i) => {
             const heightPercent = (item.total / max) * 100;
+            const isActive = activeBar === i;
             return (
             // shrink-0 prevents bars from being squished
-            <div key={i} className="flex flex-col items-center gap-2 group shrink-0 w-[40px]">
-                <div className="text-[10px] text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity font-mono mb-1 absolute -mt-6">
-                    ${item.total}
+            <div 
+                key={i} 
+                className="flex flex-col items-center gap-2 group shrink-0 w-[40px] cursor-pointer"
+                onClick={() => setActiveBar(isActive ? null : i)}
+            >
+                {/* Bar Plot Area with fixed height */}
+                <div className="h-32 w-full flex items-end justify-center relative">
+                    <div className={`
+                        absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-mono whitespace-nowrap pointer-events-none transition-opacity
+                        ${isActive ? 'opacity-100 text-gray-800 font-bold' : 'opacity-0 group-hover:opacity-100 text-gray-500'}
+                    `}>
+                        ${item.total.toLocaleString()}
+                    </div>
+                    <div 
+                        className={`w-full rounded-t-md transition-all duration-500 relative min-h-[4px] ${isActive ? 'opacity-100 ring-2 ring-offset-1 ring-gray-200' : 'hover:opacity-80'}`}
+                        style={{ height: `${heightPercent}%`, backgroundColor: color }}
+                    >
+                    </div>
                 </div>
-                <div 
-                className="w-full rounded-t-md transition-all duration-500 relative hover:opacity-80 min-h-[4px]"
-                style={{ height: `${heightPercent}%`, backgroundColor: color }}
-                >
-                </div>
-                <div className="text-[10px] text-gray-500 font-medium whitespace-nowrap">
+                <div className={`text-[10px] font-medium whitespace-nowrap ${isActive ? 'text-gray-800 font-bold' : 'text-gray-500'}`}>
                     {item.month.slice(5)}
                 </div>
             </div>
@@ -313,19 +325,25 @@ export default function StatsPage() {
     async function fetchTrend() {
       setTrendLoading(true);
       
-      // range: start ~ end
       const startStr = trendRange.start + '-01';
-      // end date needs to cover the full month, so calculate next month 1st day then minus 1 sec? 
-      // Or just simple string match. YYYY-MM is enough for grouping, but for querying we need range.
-      // Simple way: time >= start-01 AND time <= end-31
-      // Let's use simple string compare for months if format matches? No.
       
+      // Calculate next month of end range for upper bound (exclusive)
+      // This is safer than using '-31' which might be invalid date in some DBs
+      const [endY, endM] = trendRange.end.split('-').map(Number);
+      let nextY = endY;
+      let nextM = endM + 1;
+      if (nextM > 12) {
+          nextM = 1;
+          nextY++;
+      }
+      const endStr = `${nextY}-${String(nextM).padStart(2, '0')}-01`;
+
       const { data, error } = await supabase
         .from('expenses')
         .select('amount, time')
         .eq('category', selectedCategory)
         .gte('time', startStr)
-        .lte('time', trendRange.end + '-31') // Rough end date covering
+        .lt('time', endStr) 
         .order('time', { ascending: true });
 
       if (error || !data) {
@@ -333,15 +351,18 @@ export default function StatsPage() {
       } else {
         const monthMap: Record<string, number> = {};
         
-        // Generate all months in range (to show 0 for empty months)
-        const s = new Date(trendRange.start + '-01');
-        const e = new Date(trendRange.end + '-01');
-        const loop = new Date(s);
-        
-        while(loop <= e) {
-            const k = loop.toISOString().slice(0, 7);
-            monthMap[k] = 0;
-            loop.setMonth(loop.getMonth() + 1);
+        // Generate months safely without timezone issues
+        let [curY, curM] = trendRange.start.split('-').map(Number);
+        // Loop until current year-month is greater than end year-month
+        while (curY * 12 + curM <= endY * 12 + endM) {
+             const k = `${curY}-${String(curM).padStart(2, '0')}`;
+             monthMap[k] = 0;
+             
+             curM++;
+             if (curM > 12) {
+                 curM = 1;
+                 curY++;
+             }
         }
 
         data.forEach((item: any) => {
