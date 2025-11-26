@@ -660,7 +660,7 @@ export default function TodayPage() {
                   type="date" 
                   value={editForm.time}
                   onChange={e => setEditForm({...editForm, time: e.target.value})}
-                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all"
+                  className="w-full min-w-0 appearance-none p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all"
                 />
               </div>
 

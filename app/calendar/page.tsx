@@ -24,6 +24,7 @@ type CalendarEvent = {
   date: string; // YYYY-MM-DD
   time: string | null; // HH:mm
   title: string;
+  note: string | null;
   user_id: string;
   is_private: boolean;
   created_at?: string;
@@ -308,8 +309,11 @@ export default function CalendarPage() {
                         </div>
                     </div>
 
-                    <div className="flex justify-end mt-4 pt-3 border-t border-gray-200">
-                        <span className="text-sm text-gray-400 font-medium">
+                    <div className="flex justify-between items-end mt-4 pt-3 border-t border-gray-200">
+                        <span className="text-sm text-gray-500 font-medium break-all mr-2">
+                            {evt.note}
+                        </span>
+                        <span className="text-sm text-gray-400 font-medium whitespace-nowrap">
                             {userName}
                         </span>
                     </div>
