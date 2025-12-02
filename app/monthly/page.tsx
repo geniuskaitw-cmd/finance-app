@@ -236,7 +236,7 @@ export default function MonthlyPage() {
                     isToday ? 'text-white' : amountColor(sum)
                   }`}
                 >
-                  {sum}
+                  {sum.toLocaleString()}
                 </div>
               )}
             </Link>
@@ -248,13 +248,13 @@ export default function MonthlyPage() {
       <div className="mt-6 p-4 bg-white shadow-sm border rounded-lg text-sm space-y-2">
         <div className="flex justify-between">
           <span className="text-gray-600">本月預算</span>
-          <span className="font-semibold">{budget || 0}</span>
+          <span className="font-semibold">{(budget || 0).toLocaleString()}</span>
         </div>
 
         <div className="flex justify-between">
           <span className="text-gray-600">目前花費</span>
           <span className={`font-semibold ${amountColor(monthTotal)}`}>
-            {monthTotal}
+            {monthTotal.toLocaleString()}
           </span>
         </div>
 
@@ -265,7 +265,7 @@ export default function MonthlyPage() {
               budget - monthTotal < 0 ? 'text-red-600' : 'text-gray-900'
             }`}
           >
-            {budget - monthTotal}
+            {(budget - monthTotal).toLocaleString()}
           </span>
         </div>
       </div>

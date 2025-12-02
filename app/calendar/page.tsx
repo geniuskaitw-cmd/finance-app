@@ -101,6 +101,7 @@ export default function CalendarPage() {
       .from('calendar')
       .select('*')
       .eq('is_private', false)
+      .gte('date', todayStr) // 只抓取今天以後的行程
       .order('date', { ascending: true })
       .order('time', { ascending: true });
 
