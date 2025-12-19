@@ -20,11 +20,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-Hant">
-      <body className="min-h-screen bg-white text-gray-900">
+      <body className="min-h-screen" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
         <div className="pb-20">{children}</div>
 
         {/* 底部導航列 */}
-        <nav className="fixed bottom-0 left-0 right-0 border-t bg-white shadow-md">
+        <nav className="fixed bottom-0 left-0 right-0 border-t shadow-md" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
           <div className="max-w-md mx-auto flex justify-around py-2 text-xs">
 
             <NavItem href="/today" icon={<Home />} label="記帳" />
@@ -53,11 +53,11 @@ function NavItem({
   return (
     <Link
       href={href}
-      className={`flex flex-col items-center px-5 py-1 rounded-xl transition-all ${
-        isActive
-          ? 'bg-gray-200 text-black'
-          : 'text-gray-500 hover:bg-gray-100'
-      }`}
+      className="flex flex-col items-center px-5 py-1 rounded-xl transition-all"
+      style={{
+        color: isActive ? 'var(--foreground)' : 'var(--muted)',
+        background: isActive ? 'var(--input-bg)' : 'transparent'
+      }}
     >
       <div className="w-5 h-5 mb-1">{icon}</div>
       <span>{label}</span>

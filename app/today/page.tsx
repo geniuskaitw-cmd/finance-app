@@ -43,7 +43,7 @@ type NameMap = Record<string, string>;
 const NAME_MAP_KEY = 'finance_user_name_map';
 
 const CATEGORIES = [
-  '餐飲食品', '交通', '日用品', '娛樂', '醫療', '教育', 
+  '餐飲食品', '交通', '日用品', '娛樂', '醫療', '教育',
   '住房', '水電瓦斯', '通訊網路', '旅行', '服飾衣物', '雜費'
 ];
 
@@ -160,7 +160,7 @@ export default function TodayPage() {
   const [showActionMenu, setShowActionMenu] = useState(false); // 是否顯示選單
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  
+
   // 編輯表單狀態
   const [editForm, setEditForm] = useState<{
     time: string;
@@ -281,7 +281,7 @@ export default function TodayPage() {
   // 執行刪除
   async function doDelete() {
     if (!actionItem) return;
-    
+
     const { error, data } = await supabase
       .from('expenses')
       .delete()
@@ -330,7 +330,7 @@ export default function TodayPage() {
         note: editForm.note,
         category: editForm.category,
         // message 欄位通常與 note 同步，或只用 note，這裡保持同步
-        message: editForm.note 
+        message: editForm.note
       })
       .eq('id', actionItem.id)
       .select();
@@ -408,12 +408,12 @@ export default function TodayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--page-bg)' }}>
       <div className="p-4 pb-20 max-w-md mx-auto w-full">
         {/* 上方：左側只有總金額；右側月曆按鈕 */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <div className="text-lg text-gray-500">總金額</div>
+            <div className="text-lg" style={{ color: 'var(--muted)' }}>總金額</div>
             <div className={`text-4xl font-bold mt-2 ${headerAmountColor}`}>
               {headerAmount}
             </div>
@@ -421,7 +421,8 @@ export default function TodayPage() {
 
           <a
             href="/monthly"
-            className="flex items-center justify-center w-12 h-12 border rounded-xl bg-white shadow-sm mt-1"
+            className="flex items-center justify-center w-12 h-12 border rounded-xl shadow-sm mt-1"
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
           >
             <LayoutGrid className="w-6 h-6" />
           </a>
@@ -431,16 +432,18 @@ export default function TodayPage() {
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={handlePrev}
-            className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100"
+            className="p-3 border rounded-full shadow-sm"
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
           >
             <ChevronLeft className="w-6 h-6 stroke-[3]" />
           </button>
 
-          <span className="text-xl font-bold">{headerDateLabel}</span>
+          <span className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>{headerDateLabel}</span>
 
           <button
             onClick={handleNext}
-            className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100"
+            className="p-3 border rounded-full shadow-sm"
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
           >
             <ChevronRight className="w-6 h-6 stroke-[3]" />
           </button>
@@ -451,31 +454,37 @@ export default function TodayPage() {
           <div className="flex gap-4">
             <button
               onClick={() => setMode('day')}
-              className={`pb-1 border-b-2 ${
-                mode === 'day'
-                  ? 'border-black font-semibold'
-                  : 'border-transparent text-gray-500'
-              }`}
+              style={{
+                borderBottomWidth: '2px',
+                borderBottomColor: mode === 'day' ? 'var(--foreground)' : 'transparent',
+                color: mode === 'day' ? 'var(--foreground)' : 'var(--muted)',
+                fontWeight: mode === 'day' ? 600 : 400
+              }}
+              className="pb-1"
             >
               日
             </button>
             <button
               onClick={() => setMode('week')}
-              className={`pb-1 border-b-2 ${
-                mode === 'week'
-                  ? 'border-black font-semibold'
-                  : 'border-transparent text-gray-500'
-              }`}
+              style={{
+                borderBottomWidth: '2px',
+                borderBottomColor: mode === 'week' ? 'var(--foreground)' : 'transparent',
+                color: mode === 'week' ? 'var(--foreground)' : 'var(--muted)',
+                fontWeight: mode === 'week' ? 600 : 400
+              }}
+              className="pb-1"
             >
               週
             </button>
             <button
               onClick={() => setMode('month')}
-              className={`pb-1 border-b-2 ${
-                mode === 'month'
-                  ? 'border-black font-semibold'
-                  : 'border-transparent text-gray-500'
-              }`}
+              style={{
+                borderBottomWidth: '2px',
+                borderBottomColor: mode === 'month' ? 'var(--foreground)' : 'transparent',
+                color: mode === 'month' ? 'var(--foreground)' : 'var(--muted)',
+                fontWeight: mode === 'month' ? 600 : 400
+              }}
+              className="pb-1"
             >
               月
             </button>
@@ -486,13 +495,14 @@ export default function TodayPage() {
             onChange={(e) =>
               setSort(
                 e.target.value as
-                  | 'time-desc'
-                  | 'time-asc'
-                  | 'amount-desc'
-                  | 'amount-asc',
+                | 'time-desc'
+                | 'time-asc'
+                | 'amount-desc'
+                | 'amount-asc',
               )
             }
-            className="border rounded px-2 py-1 text-xs bg-white"
+            className="border rounded px-2 py-1 text-xs"
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
           >
             <option value="time-desc">時間：新 → 舊</option>
             <option value="time-asc">時間：舊 → 新</option>
@@ -503,10 +513,10 @@ export default function TodayPage() {
 
         {/* 載入 / 無資料 */}
         {loading && (
-          <p className="text-gray-500 text-center mt-4">載入中...</p>
+          <p className="text-center mt-4" style={{ color: 'var(--muted)' }}>載入中...</p>
         )}
         {!loading && data.length === 0 && (
-          <p className="text-gray-500 text-center mt-4">沒有資料。</p>
+          <p className="text-center mt-4" style={{ color: 'var(--muted)' }}>沒有資料。</p>
         )}
 
         {/* 記帳卡片列表 */}
@@ -528,21 +538,23 @@ export default function TodayPage() {
                   e.preventDefault();
                   handleOpenAction(item);
                 }}
-                className="relative flex items-center p-4 pl-6 border rounded-xl bg-white shadow-sm group select-none"
+                className="relative flex items-center p-4 pl-6 border rounded-xl shadow-sm group select-none"
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
               >
                 {/* 左上角更多按鈕 */}
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleOpenAction(item);
                   }}
-                  className="absolute top-1 left-1 p-1 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-full z-10"
+                  className="absolute top-1 left-1 p-1 rounded-full z-10"
+                  style={{ color: 'var(--muted-foreground)' }}
                 >
                   <MoreVertical className="w-4 h-4" />
                 </button>
 
                 {/* Icon */}
-                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mr-4">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 mr-4" style={{ background: 'var(--input-bg)', color: 'var(--foreground)' }}>
                   <CategoryIcon category={item.category} />
                 </div>
 
@@ -550,7 +562,7 @@ export default function TodayPage() {
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                   {/* Row 1: Category + Amount */}
                   <div className="flex justify-between items-start">
-                    <div className="font-bold text-lg text-gray-900 truncate pr-2">
+                    <div className="font-bold text-lg truncate pr-2" style={{ color: 'var(--foreground)' }}>
                       {item.category || '未分類'}
                     </div>
                     <div className={`text-2xl font-bold ${amountColorClass} leading-none whitespace-nowrap`}>
@@ -559,16 +571,16 @@ export default function TodayPage() {
                   </div>
 
                   {/* Row 2: Time */}
-                  <div className="text-gray-500 text-sm">
+                  <div className="text-sm" style={{ color: 'var(--muted)' }}>
                     {item.time}（{weekday}）
                   </div>
 
                   {/* Row 3: Note + User */}
                   <div className="flex justify-between items-end min-h-[1.25rem]">
-                    <div className="text-gray-600 line-clamp-1 text-sm flex-1 pr-2">
+                    <div className="line-clamp-1 text-sm flex-1 pr-2" style={{ color: 'var(--muted)' }}>
                       {item.note || item.message}
                     </div>
-                    <div className="text-sm text-gray-400 whitespace-nowrap">
+                    <div className="text-sm whitespace-nowrap" style={{ color: 'var(--muted-foreground)' }}>
                       {displayUser}
                     </div>
                   </div>
@@ -584,30 +596,32 @@ export default function TodayPage() {
       {/* 動作選單 (類似 Action Sheet) */}
       {showActionMenu && actionItem && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={closeAllModals}>
-          <div className="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-xl animate-in slide-in-from-bottom-10 fade-in duration-200" onClick={e => e.stopPropagation()}>
-            <div className="p-4 border-b text-center font-bold text-gray-700">
+          <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-xl animate-in slide-in-from-bottom-10 fade-in duration-200" style={{ background: 'var(--card-bg)' }} onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b text-center font-bold" style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>
               選擇操作
             </div>
             <div className="flex flex-col">
-              <button 
+              <button
                 onClick={onClickEdit}
-                className="flex items-center justify-center gap-2 p-4 hover:bg-gray-50 border-b text-blue-600 font-medium"
+                className="flex items-center justify-center gap-2 p-4 border-b text-blue-500 font-medium"
+                style={{ borderColor: 'var(--card-border)' }}
               >
                 <Edit className="w-5 h-5" />
                 編輯紀錄
               </button>
-              <button 
+              <button
                 onClick={onClickDelete}
-                className="flex items-center justify-center gap-2 p-4 hover:bg-gray-50 text-red-600 font-medium"
+                className="flex items-center justify-center gap-2 p-4 text-red-500 font-medium"
               >
                 <Trash2 className="w-5 h-5" />
                 刪除紀錄
               </button>
             </div>
-            <div className="p-2 bg-gray-50">
-              <button 
+            <div className="p-2" style={{ background: 'var(--input-bg)' }}>
+              <button
                 onClick={closeAllModals}
-                className="w-full py-3 bg-white rounded-xl border shadow-sm font-bold text-gray-700"
+                className="w-full py-3 rounded-xl border shadow-sm font-bold"
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
               >
                 取消
               </button>
@@ -619,19 +633,20 @@ export default function TodayPage() {
       {/* 刪除確認框 */}
       {showDeleteConfirm && actionItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">確定要刪除嗎？</h3>
-            <p className="text-gray-600 mb-6">
+          <div className="w-full max-w-sm rounded-2xl p-6 shadow-xl" style={{ background: 'var(--card-bg)' }}>
+            <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--foreground)' }}>確定要刪除嗎？</h3>
+            <p className="mb-6" style={{ color: 'var(--muted)' }}>
               此動作無法復原，該筆記帳紀錄將會永久刪除。
             </p>
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={closeAllModals}
-                className="flex-1 py-2.5 border rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+                className="flex-1 py-2.5 border rounded-xl font-medium"
+                style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
               >
                 取消
               </button>
-              <button 
+              <button
                 onClick={doDelete}
                 className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700"
               >
@@ -645,58 +660,61 @@ export default function TodayPage() {
       {/* 編輯視窗 */}
       {showEditModal && actionItem && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm sm:p-6">
-          <div className="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl p-5 shadow-xl h-[85vh] sm:h-auto flex flex-col">
+          <div className="w-full max-w-md sm:rounded-2xl rounded-t-2xl p-5 shadow-xl h-[85vh] sm:h-auto flex flex-col" style={{ background: 'var(--card-bg)' }}>
             <div className="flex justify-between items-center mb-5">
-              <h3 className="text-xl font-bold text-gray-900">編輯記帳</h3>
-              <button onClick={closeAllModals} className="p-1 text-gray-400 hover:bg-gray-100 rounded-full">
+              <h3 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>編輯記帳</h3>
+              <button onClick={closeAllModals} className="p-1 rounded-full" style={{ color: 'var(--muted)' }}>
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">日期</label>
-                <input 
-                  type="date" 
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted)' }}>日期</label>
+                <input
+                  type="date"
                   value={editForm.time}
-                  onChange={e => setEditForm({...editForm, time: e.target.value})}
-                  className="w-full min-w-0 appearance-none p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all"
+                  onChange={e => setEditForm({ ...editForm, time: e.target.value })}
+                  className="w-full min-w-0 appearance-none p-3 border rounded-xl outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">金額</label>
-                <input 
-                  type="number" 
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted)' }}>金額</label>
+                <input
+                  type="number"
                   value={editForm.amount}
-                  onChange={e => setEditForm({...editForm, amount: e.target.value})}
-                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all font-mono text-lg"
+                  onChange={e => setEditForm({ ...editForm, amount: e.target.value })}
+                  className="w-full p-3 border rounded-xl outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all font-mono text-lg"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">項目 (備註)</label>
-                <input 
-                  type="text" 
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted)' }}>項目 (備註)</label>
+                <input
+                  type="text"
                   value={editForm.note}
-                  onChange={e => setEditForm({...editForm, note: e.target.value})}
-                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all"
+                  onChange={e => setEditForm({ ...editForm, note: e.target.value })}
+                  className="w-full p-3 border rounded-xl outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                   placeholder="早餐、計程車..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">類別</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted)' }}>類別</label>
                 <div className="grid grid-cols-4 gap-2">
                   {CATEGORIES.map(cat => (
                     <button
                       key={cat}
-                      onClick={() => setEditForm({...editForm, category: cat})}
-                      className={`p-2 rounded-lg text-xs font-medium border transition-all
-                        ${editForm.category === cat 
-                          ? 'bg-blue-600 text-white border-blue-600' 
-                          : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                        }`}
+                      onClick={() => setEditForm({ ...editForm, category: cat })}
+                      className="p-2 rounded-lg text-xs font-medium border transition-all"
+                      style={editForm.category === cat
+                        ? { background: '#2563eb', color: 'white', borderColor: '#2563eb' }
+                        : { background: 'var(--card-bg)', color: 'var(--foreground)', borderColor: 'var(--card-border)' }
+                      }
                     >
                       {cat}
                     </button>
@@ -705,16 +723,17 @@ export default function TodayPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6 pt-4 border-t">
-              <button 
+            <div className="flex gap-3 mt-6 pt-4 border-t" style={{ borderColor: 'var(--card-border)' }}>
+              <button
                 onClick={closeAllModals}
-                className="flex-1 py-3 border rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+                className="flex-1 py-3 border rounded-xl font-medium"
+                style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
               >
                 取消
               </button>
-              <button 
+              <button
                 onClick={doUpdate}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
               >
                 <Check className="w-5 h-5" />
                 儲存變更

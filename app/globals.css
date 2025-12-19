@@ -3,6 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --muted: #6b7280;
+  --muted-foreground: #9ca3af;
+  --input-bg: #f9fafb;
+  --input-border: #d1d5db;
+  --input-text: #111827;
+  --page-bg: #f9fafb;
 }
 
 @theme inline {
@@ -16,6 +24,14 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --card-bg: #1c1c1e;
+    --card-border: #38383a;
+    --muted: #a1a1aa;
+    --muted-foreground: #71717a;
+    --input-bg: #2c2c2e;
+    --input-border: #48484a;
+    --input-text: #ffffff;
+    --page-bg: #000000;
   }
 }
 
@@ -23,4 +39,41 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 確保所有表單元素在深色模式下正確顯示 */
+input,
+select,
+textarea {
+  color: var(--input-text);
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+/* iOS 深色模式下的日期/月份選擇器修復 */
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="datetime-local"] {
+  color: var(--input-text);
+  background-color: var(--input-bg);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: var(--calendar-icon-filter, none);
+}
+
+@media (prefers-color-scheme: dark) {
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
 }

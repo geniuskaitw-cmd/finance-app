@@ -28,7 +28,7 @@ import {
  * Constants & Types
  * -------------------------------------------------------- */
 const CATEGORIES = [
-  '餐飲食品', '交通', '日用品', '娛樂', '醫療', '教育', 
+  '餐飲食品', '交通', '日用品', '娛樂', '醫療', '教育',
   '住房', '水電瓦斯', '通訊網路', '旅行', '服飾衣物', '雜費'
 ];
 
@@ -100,11 +100,11 @@ function DonutChart({ data, total }: { data: CategoryStat[], total: number }) {
 
     // if full circle (100%), handle special case
     if (slice.percentage >= 99.9) {
-       return {
-         ...slice,
-         pathData: `M 1 0 A 1 1 0 1 1 -1 0 A 1 1 0 1 1 1 0`, // 2 arcs to make a circle
-         index
-       };
+      return {
+        ...slice,
+        pathData: `M 1 0 A 1 1 0 1 1 -1 0 A 1 1 0 1 1 1 0`, // 2 arcs to make a circle
+        index
+      };
     }
 
     const [startX, startY] = getCoordinatesForPercent(startPercent);
@@ -124,16 +124,16 @@ function DonutChart({ data, total }: { data: CategoryStat[], total: number }) {
   // Center Text Logic
   const activeItem = activeIndex !== null ? data[activeIndex] : null;
   const centerLabel = activeItem ? activeItem.category : "總支出";
-  const centerValue = activeItem 
-    ? `${activeItem.percentage.toFixed(1)}%` 
+  const centerValue = activeItem
+    ? `${activeItem.percentage.toFixed(1)}%`
     : `$${total.toLocaleString()}`;
   const centerSubValue = activeItem ? `$${activeItem.total.toLocaleString()}` : "";
 
   if (total === 0) {
     return (
       <div className="relative w-52 h-52 mx-auto flex items-center justify-center">
-        <div className="absolute inset-0 rounded-full border-[16px] border-gray-100"></div>
-        <div className="text-gray-400 text-sm">本月無支出</div>
+        <div className="absolute inset-0 rounded-full border-[16px]" style={{ borderColor: 'var(--input-bg)' }}></div>
+        <div className="text-sm" style={{ color: 'var(--muted)' }}>本月無支出</div>
       </div>
     );
   }
@@ -153,24 +153,24 @@ function DonutChart({ data, total }: { data: CategoryStat[], total: number }) {
           />
         ))}
       </svg>
-      
+
       {/* Center Text (Click center to reset) */}
-      <div 
+      <div
         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
       >
-        <div className="text-sm text-gray-500 font-medium mb-1">{centerLabel}</div>
-        <div className="text-2xl font-bold text-gray-800">{centerValue}</div>
+        <div className="text-sm font-medium mb-1" style={{ color: 'var(--muted)' }}>{centerLabel}</div>
+        <div className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{centerValue}</div>
         {centerSubValue && (
-          <div className="text-sm text-gray-500 font-medium mt-1">{centerSubValue}</div>
+          <div className="text-sm font-medium mt-1" style={{ color: 'var(--muted)' }}>{centerSubValue}</div>
         )}
       </div>
-      
+
       {/* Reset overlay if active */}
       {activeIndex !== null && (
-         <div 
-           className="absolute inset-0 z-[-1] cursor-pointer" 
-           onClick={() => setActiveIndex(null)}
-         />
+        <div
+          className="absolute inset-0 z-[-1] cursor-pointer"
+          onClick={() => setActiveIndex(null)}
+        />
       )}
     </div>
   );
@@ -184,43 +184,50 @@ function TrendChart({ data, category }: { data: { month: string, total: number }
   const color = getCategoryColor(category);
   const [activeBar, setActiveBar] = useState<number | null>(null);
 
-  if (data.length === 0) return <div className="h-48 flex items-center justify-center text-gray-400">無資料</div>;
+  if (data.length === 0) return <div className="h-48 flex items-center justify-center" style={{ color: 'var(--muted)' }}>無資料</div>;
 
   return (
     <div className="w-full overflow-x-auto pb-2 touch-pan-x no-scrollbar">
-        {/* min-w-max ensures container expands to fit all shrunk-0 children */}
-        <div className="flex items-end gap-4 px-2 pt-8 min-w-max">
+      {/* min-w-max ensures container expands to fit all shrunk-0 children */}
+      <div className="flex items-end gap-4 px-2 pt-8 min-w-max">
         {data.map((item, i) => {
-            const heightPercent = (item.total / max) * 100;
-            const isActive = activeBar === i;
-            return (
+          const heightPercent = (item.total / max) * 100;
+          const isActive = activeBar === i;
+          return (
             // shrink-0 prevents bars from being squished
-            <div 
-                key={i} 
-                className="flex flex-col items-center gap-2 group shrink-0 w-[40px] cursor-pointer"
-                onClick={() => setActiveBar(isActive ? null : i)}
+            <div
+              key={i}
+              className="flex flex-col items-center gap-2 group shrink-0 w-[40px] cursor-pointer"
+              onClick={() => setActiveBar(isActive ? null : i)}
             >
-                {/* Bar Plot Area with fixed height */}
-                <div className="h-32 w-full flex items-end justify-center relative">
-                    <div className={`
-                        absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-mono whitespace-nowrap pointer-events-none transition-opacity
-                        ${isActive ? 'opacity-100 text-gray-800 font-bold' : 'opacity-0 group-hover:opacity-100 text-gray-500'}
-                    `}>
-                        ${item.total.toLocaleString()}
-                    </div>
-                    <div 
-                        className={`w-full rounded-t-md transition-all duration-500 relative min-h-[4px] ${isActive ? 'opacity-100 ring-2 ring-offset-1 ring-gray-200' : 'hover:opacity-80'}`}
-                        style={{ height: `${heightPercent}%`, backgroundColor: color }}
-                    >
-                    </div>
+              {/* Bar Plot Area with fixed height */}
+              <div className="h-32 w-full flex items-end justify-center relative">
+                <div
+                  className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-mono whitespace-nowrap pointer-events-none transition-opacity"
+                  style={{
+                    opacity: isActive ? 1 : undefined,
+                    color: 'var(--foreground)',
+                    fontWeight: isActive ? 'bold' : 'normal'
+                  }}
+                >
+                  ${item.total.toLocaleString()}
                 </div>
-                <div className={`text-[10px] font-medium whitespace-nowrap ${isActive ? 'text-gray-800 font-bold' : 'text-gray-500'}`}>
-                    {item.month.slice(5)}
+                <div
+                  className={`w-full rounded-t-md transition-all duration-500 relative min-h-[4px] ${isActive ? 'opacity-100 ring-2 ring-offset-1' : 'hover:opacity-80'}`}
+                  style={{ height: `${heightPercent}%`, backgroundColor: color, '--tw-ring-color': 'var(--card-border)' } as React.CSSProperties}
+                >
                 </div>
+              </div>
+              <div
+                className="text-[10px] font-medium whitespace-nowrap"
+                style={{ color: isActive ? 'var(--foreground)' : 'var(--muted)', fontWeight: isActive ? 'bold' : 'normal' }}
+              >
+                {item.month.slice(5)}
+              </div>
             </div>
-            );
+          );
         })}
-        </div>
+      </div>
     </div>
   );
 }
@@ -235,7 +242,7 @@ export default function StatsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [trendData, setTrendData] = useState<{ month: string, total: number }[]>([]);
   const [trendLoading, setTrendLoading] = useState(false);
-  
+
   // Custom Range for Trend
   const [trendRange, setTrendRange] = useState<{ start: string, end: string }>({
     start: '', end: ''
@@ -244,25 +251,25 @@ export default function StatsPage() {
   // Init trend range when category selected (default last 6 months)
   useEffect(() => {
     if (selectedCategory) {
-        // 使用本地時間計算，避免 UTC 時區差異導致月份錯誤
-        const now = new Date();
-        
-        // 結束月份：當前月份
-        const endYear = now.getFullYear();
-        const endMonth = now.getMonth() + 1;
-        
-        // 開始月份：5個月前
-        // 邏輯：建立一個日期在當月1號，然後扣掉5個月
-        const startObj = new Date(endYear, now.getMonth() - 5, 1); 
-        const startYear = startObj.getFullYear();
-        const startMonth = startObj.getMonth() + 1;
+      // 使用本地時間計算，避免 UTC 時區差異導致月份錯誤
+      const now = new Date();
 
-        const fmt = (y: number, m: number) => `${y}-${String(m).padStart(2, '0')}`;
+      // 結束月份：當前月份
+      const endYear = now.getFullYear();
+      const endMonth = now.getMonth() + 1;
 
-        setTrendRange({
-            start: fmt(startYear, startMonth),
-            end: fmt(endYear, endMonth)
-        });
+      // 開始月份：5個月前
+      // 邏輯：建立一個日期在當月1號，然後扣掉5個月
+      const startObj = new Date(endYear, now.getMonth() - 5, 1);
+      const startYear = startObj.getFullYear();
+      const startMonth = startObj.getMonth() + 1;
+
+      const fmt = (y: number, m: number) => `${y}-${String(m).padStart(2, '0')}`;
+
+      setTrendRange({
+        start: fmt(startYear, startMonth),
+        end: fmt(endYear, endMonth)
+      });
     }
   }, [selectedCategory]);
 
@@ -294,8 +301,8 @@ export default function StatsPage() {
         const cat = item.category || '未分類';
         const amt = Number(item.amount) || 0;
         if (cat) {
-             map[cat] = (map[cat] || 0) + amt;
-             total += amt;
+          map[cat] = (map[cat] || 0) + amt;
+          total += amt;
         }
       });
 
@@ -321,20 +328,20 @@ export default function StatsPage() {
    * ----------------------------- */
   useEffect(() => {
     if (!selectedCategory || !trendRange.start || !trendRange.end) return;
-    
+
     async function fetchTrend() {
       setTrendLoading(true);
-      
+
       const startStr = trendRange.start + '-01';
-      
+
       // Calculate next month of end range for upper bound (exclusive)
       // This is safer than using '-31' which might be invalid date in some DBs
       const [endY, endM] = trendRange.end.split('-').map(Number);
       let nextY = endY;
       let nextM = endM + 1;
       if (nextM > 12) {
-          nextM = 1;
-          nextY++;
+        nextM = 1;
+        nextY++;
       }
       const endStr = `${nextY}-${String(nextM).padStart(2, '0')}-01`;
 
@@ -343,38 +350,38 @@ export default function StatsPage() {
         .select('amount, time')
         .eq('category', selectedCategory)
         .gte('time', startStr)
-        .lt('time', endStr) 
+        .lt('time', endStr)
         .order('time', { ascending: true });
 
       if (error || !data) {
         setTrendData([]);
       } else {
         const monthMap: Record<string, number> = {};
-        
+
         // Generate months safely without timezone issues
         let [curY, curM] = trendRange.start.split('-').map(Number);
         // Loop until current year-month is greater than end year-month
         while (curY * 12 + curM <= endY * 12 + endM) {
-             const k = `${curY}-${String(curM).padStart(2, '0')}`;
-             monthMap[k] = 0;
-             
-             curM++;
-             if (curM > 12) {
-                 curM = 1;
-                 curY++;
-             }
+          const k = `${curY}-${String(curM).padStart(2, '0')}`;
+          monthMap[k] = 0;
+
+          curM++;
+          if (curM > 12) {
+            curM = 1;
+            curY++;
+          }
         }
 
         data.forEach((item: any) => {
-           const k = item.time.slice(0, 7);
-           if (monthMap[k] !== undefined) {
-               monthMap[k] += Number(item.amount) || 0;
-           }
+          const k = item.time.slice(0, 7);
+          if (monthMap[k] !== undefined) {
+            monthMap[k] += Number(item.amount) || 0;
+          }
         });
 
         const arr = Object.keys(monthMap).sort().map(k => ({
-            month: k,
-            total: monthMap[k]
+          month: k,
+          total: monthMap[k]
         }));
         setTrendData(arr);
       }
@@ -397,39 +404,40 @@ export default function StatsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--page-bg)' }}>
       <div className="p-4 max-w-md mx-auto w-full flex-1 flex flex-col">
-        
+
         {/* 標題與月份切換 */}
         <div className="flex justify-between items-center mb-6">
-          <button onClick={prevMonth} className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100">
-             <ChevronLeft className="w-6 h-6 stroke-[3]" />
+          <button onClick={prevMonth} className="p-3 border rounded-full shadow-sm" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>
+            <ChevronLeft className="w-6 h-6 stroke-[3]" />
           </button>
-          <div className="text-xl font-bold">
-             {currentMonth.getFullYear()} 年 {currentMonth.getMonth() + 1} 月
+          <div className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
+            {currentMonth.getFullYear()} 年 {currentMonth.getMonth() + 1} 月
           </div>
-          <button onClick={nextMonth} className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100">
-             <ChevronRight className="w-6 h-6 stroke-[3]" />
+          <button onClick={nextMonth} className="p-3 border rounded-full shadow-sm" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>
+            <ChevronRight className="w-6 h-6 stroke-[3]" />
           </button>
         </div>
 
         {/* 圓餅圖 */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm mb-6 flex justify-center">
+        <div className="p-6 rounded-2xl shadow-sm mb-6 flex justify-center" style={{ background: 'var(--card-bg)' }}>
           <DonutChart data={stats} total={monthTotal} />
         </div>
 
         {/* 分類列表 */}
         <div className="space-y-3 pb-20">
           {loading ? (
-            <div className="text-center text-gray-400 py-10">計算中...</div>
+            <div className="text-center py-10" style={{ color: 'var(--muted)' }}>計算中...</div>
           ) : stats.length === 0 ? (
-            <div className="text-center text-gray-400 py-10">本月尚無資料</div>
+            <div className="text-center py-10" style={{ color: 'var(--muted)' }}>本月尚無資料</div>
           ) : (
             stats.map((stat) => (
-              <div 
+              <div
                 key={stat.category}
                 onClick={() => setSelectedCategory(stat.category)}
-                className="bg-white p-4 rounded-xl shadow-sm border flex items-center gap-4 hover:bg-gray-50 cursor-pointer active:scale-[0.98] transition-all"
+                className="p-4 rounded-xl shadow-sm border flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-all"
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
               >
                 {/* Icon */}
                 <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: stat.color + '20', color: stat.color }}>
@@ -439,23 +447,23 @@ export default function StatsPage() {
                 {/* Info */}
                 <div className="flex-1">
                   <div className="flex justify-between items-end mb-1">
-                    <div className="font-bold text-gray-900">{stat.category}</div>
-                    <div className="font-bold text-gray-900">${stat.total.toLocaleString()}</div>
+                    <div className="font-bold" style={{ color: 'var(--foreground)' }}>{stat.category}</div>
+                    <div className="font-bold" style={{ color: 'var(--foreground)' }}>${stat.total.toLocaleString()}</div>
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'var(--input-bg)' }}>
+                      <div
                         className="h-full rounded-full"
                         style={{ width: `${stat.percentage}%`, backgroundColor: stat.color }}
                       />
                     </div>
-                    <div className="text-xs text-gray-400 w-10 text-right">{stat.percentage.toFixed(1)}%</div>
+                    <div className="text-xs w-10 text-right" style={{ color: 'var(--muted-foreground)' }}>{stat.percentage.toFixed(1)}%</div>
                   </div>
                 </div>
-                
-                <ChevronRight className="w-5 h-5 text-gray-300" />
+
+                <ChevronRight className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
               </div>
             ))
           )}
@@ -465,87 +473,89 @@ export default function StatsPage() {
       {/* Trend Modal */}
       {selectedCategory && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm" onClick={() => setSelectedCategory(null)}>
-          <div className="bg-white w-full max-w-md rounded-t-3xl p-6 shadow-xl animate-in slide-in-from-bottom-10 flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-t-3xl p-6 shadow-xl animate-in slide-in-from-bottom-10 flex flex-col max-h-[85vh]" style={{ background: 'var(--card-bg)' }} onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: getCategoryColor(selectedCategory) + '20', color: getCategoryColor(selectedCategory) }}>
-                    <CategoryIcon category={selectedCategory} />
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-bold text-gray-900">{selectedCategory}</h3>
-                   <p className="text-xs text-gray-500">歷史趨勢</p>
-                 </div>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: getCategoryColor(selectedCategory) + '20', color: getCategoryColor(selectedCategory) }}>
+                  <CategoryIcon category={selectedCategory} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>{selectedCategory}</h3>
+                  <p className="text-xs" style={{ color: 'var(--muted)' }}>歷史趨勢</p>
+                </div>
               </div>
-              <button onClick={() => setSelectedCategory(null)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full">
+              <button onClick={() => setSelectedCategory(null)} className="p-2 rounded-full" style={{ color: 'var(--muted)' }}>
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Date Range Filter */}
-            <div className="flex items-center gap-2 mb-4 bg-gray-50 p-2 rounded-xl">
-                <div className="flex items-center flex-1">
-                    <CalendarIcon className="w-4 h-4 text-gray-400 mr-2" />
-                    <input 
-                        type="month" 
-                        value={trendRange.start}
-                        onChange={e => {
-                            const newStart = e.target.value;
-                            if (!newStart) return;
-                            
-                            setTrendRange(p => {
-                                // 加 -01 確保跨瀏覽器解析正確
-                                const s = new Date(newStart + '-01');
-                                const e = new Date(p.end + '-01');
-                                const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
-                                
-                                if (months > 11 || months < 0) {
-                                    const newEnd = new Date(s);
-                                    newEnd.setMonth(newEnd.getMonth() + 11);
-                                    return { start: newStart, end: newEnd.toISOString().slice(0, 7) };
-                                }
-                                return { ...p, start: newStart };
-                            });
-                        }}
-                        className="bg-transparent text-sm font-medium text-gray-700 outline-none w-full"
-                    />
-                </div>
-                <span className="text-gray-400">-</span>
-                <div className="flex items-center flex-1">
-                    <input 
-                        type="month" 
-                        value={trendRange.end}
-                        onChange={e => {
-                            const newEnd = e.target.value;
-                            if (!newEnd) return;
+            <div className="flex items-center gap-2 mb-4 p-2 rounded-xl" style={{ background: 'var(--input-bg)' }}>
+              <div className="flex items-center flex-1">
+                <CalendarIcon className="w-4 h-4 mr-2" style={{ color: 'var(--muted)' }} />
+                <input
+                  type="month"
+                  value={trendRange.start}
+                  onChange={e => {
+                    const newStart = e.target.value;
+                    if (!newStart) return;
 
-                            setTrendRange(p => {
-                                const s = new Date(p.start + '-01');
-                                const e = new Date(newEnd + '-01');
-                                const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
-                                
-                                if (months > 11 || months < 0) {
-                                    const newStart = new Date(e);
-                                    newStart.setMonth(newStart.getMonth() - 11);
-                                    return { start: newStart.toISOString().slice(0, 7), end: newEnd };
-                                }
-                                return { ...p, end: newEnd };
-                            });
-                        }}
-                        className="bg-transparent text-sm font-medium text-gray-700 outline-none w-full text-right"
-                    />
-                </div>
+                    setTrendRange(p => {
+                      // 加 -01 確保跨瀏覽器解析正確
+                      const s = new Date(newStart + '-01');
+                      const e = new Date(p.end + '-01');
+                      const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+
+                      if (months > 11 || months < 0) {
+                        const newEnd = new Date(s);
+                        newEnd.setMonth(newEnd.getMonth() + 11);
+                        return { start: newStart, end: newEnd.toISOString().slice(0, 7) };
+                      }
+                      return { ...p, start: newStart };
+                    });
+                  }}
+                  className="bg-transparent text-sm font-medium outline-none w-full"
+                  style={{ color: 'var(--foreground)' }}
+                />
+              </div>
+              <span style={{ color: 'var(--muted)' }}>-</span>
+              <div className="flex items-center flex-1">
+                <input
+                  type="month"
+                  value={trendRange.end}
+                  onChange={e => {
+                    const newEnd = e.target.value;
+                    if (!newEnd) return;
+
+                    setTrendRange(p => {
+                      const s = new Date(p.start + '-01');
+                      const e = new Date(newEnd + '-01');
+                      const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+
+                      if (months > 11 || months < 0) {
+                        const newStart = new Date(e);
+                        newStart.setMonth(newStart.getMonth() - 11);
+                        return { start: newStart.toISOString().slice(0, 7), end: newEnd };
+                      }
+                      return { ...p, end: newEnd };
+                    });
+                  }}
+                  className="bg-transparent text-sm font-medium outline-none w-full text-right"
+                  style={{ color: 'var(--foreground)' }}
+                />
+              </div>
             </div>
 
-            <div className="bg-gray-50 rounded-2xl p-4 flex-1 min-h-[200px] overflow-hidden flex flex-col">
+            <div className="rounded-2xl p-4 flex-1 min-h-[200px] overflow-hidden flex flex-col" style={{ background: 'var(--input-bg)' }}>
               {trendLoading ? (
-                <div className="h-full flex items-center justify-center text-gray-400">載入中...</div>
+                <div className="h-full flex items-center justify-center" style={{ color: 'var(--muted)' }}>載入中...</div>
               ) : (
                 <TrendChart data={trendData} category={selectedCategory} />
               )}
             </div>
-            
-            <div className="mt-6 text-center text-sm text-gray-400">
-                點擊其他區域關閉
+
+            <div className="mt-6 text-center text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              點擊其他區域關閉
             </div>
           </div>
         </div>
