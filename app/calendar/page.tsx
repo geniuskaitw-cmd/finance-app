@@ -128,11 +128,11 @@ export default function CalendarPage() {
           dStr = `${dStr.slice(0, 4)}-${dStr.slice(4, 6)}-${dStr.slice(6, 8)}`;
         }
         if (item.isHoliday) {
-            map[dStr] = {
+          map[dStr] = {
             date: dStr,
             name: item.description || item.name || '國定假日',
             isHoliday: true,
-            };
+          };
         }
       });
       setHolidays((prev) => ({ ...prev, ...map }));
@@ -224,7 +224,7 @@ export default function CalendarPage() {
       } else {
         const futureEvent = events.find((e) => e.date >= dateStr);
         if (futureEvent && eventRefs.current[futureEvent.date]) {
-            eventRefs.current[futureEvent.date]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          eventRefs.current[futureEvent.date]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }
     }, 100);
@@ -240,86 +240,96 @@ export default function CalendarPage() {
     return (
       <div className="pb-20 space-y-4" ref={listRef}>
         {/* 今天狀態區塊 */}
-        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-          <h2 className="text-lg font-bold text-blue-900 mb-2">
+        <div className="p-4 rounded-xl border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--foreground)' }}>
             今天是 {todayStr}
           </h2>
           {todayEvents.length > 0 ? (
-            <div className="text-blue-700">
+            <div style={{ color: 'var(--muted)' }}>
               今日有 {todayEvents.length} 個行程
             </div>
           ) : (
-            <div className="text-gray-500">本日無行程</div>
+            <div style={{ color: 'var(--muted)' }}>本日無行程</div>
           )}
         </div>
 
         {sortedEvents.length === 0 && (
-            <div className="text-center text-gray-400 py-10">尚無任何行程記錄</div>
+          <div className="text-center py-10" style={{ color: 'var(--muted)' }}>尚無任何行程記錄</div>
         )}
 
         {sortedEvents.map((evt) => {
-            const isPast = evt.date < todayStr;
-            const isToday = evt.date === todayStr;
-            const userName = userMap[evt.user_id] || '未知';
+          const isPast = evt.date < todayStr;
+          const isToday = evt.date === todayStr;
+          const userName = userMap[evt.user_id] || '未知';
 
-            return (
-                <div
-                    key={evt.id}
-                    ref={(el) => {
-                        if (el && (!eventRefs.current[evt.date] || eventRefs.current[evt.date] === el)) {
-                             eventRefs.current[evt.date] = el;
-                        }
-                    }}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      handleOpenAction(evt);
-                    }}
-                    className={`relative p-5 rounded-2xl border shadow-sm flex flex-col justify-between min-h-[120px] transition-all select-none
-                        ${isToday ? 'bg-blue-50/50 border-blue-500 ring-1 ring-blue-500' : 'bg-white'}
+          return (
+            <div
+              key={evt.id}
+              ref={(el) => {
+                if (el && (!eventRefs.current[evt.date] || eventRefs.current[evt.date] === el)) {
+                  eventRefs.current[evt.date] = el;
+                }
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                handleOpenAction(evt);
+              }}
+              className={`relative p-5 rounded-2xl border shadow-sm flex flex-col justify-between min-h-[120px] transition-all select-none
+                        ${isToday ? 'ring-1 ring-blue-500' : ''}
                         ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}
                     `}
-                >
-                    {/* 右上角更多按鈕 (絕對定位以免破壞版面) */}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenAction(evt);
-                      }}
-                      className="absolute top-2 right-2 p-1 text-gray-300 hover:text-gray-600 hover:bg-gray-100/50 rounded-full z-10"
-                    >
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
+              style={{
+                background: isToday ? 'var(--input-bg)' : 'var(--card-bg)',
+                borderColor: isToday ? '#3b82f6' : 'var(--card-border)'
+              }}
+            >
+              {/* 右上角更多按鈕 (絕對定位以免破壞版面) */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenAction(evt);
+                }}
+                className="absolute top-2 right-2 p-1 rounded-full z-10"
+                style={{ color: 'var(--muted-foreground)' }}
+              >
+                <MoreVertical className="w-5 h-5" />
+              </button>
 
-                    <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-start pr-8">
-                            <div className={`text-xl font-bold ${isToday ? 'text-blue-700' : 'text-gray-900'}`}>
-                                {evt.date}
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                             <div className={`flex items-center px-2 py-1 rounded-lg text-lg font-bold
-                                ${isToday ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
-                                <Clock className="w-5 h-5 mr-1.5" />
-                                {evt.time ? evt.time.slice(0, 5) : '全天'}
-                            </div>
-                        </div>
-
-                        <div className="text-gray-800 text-xl font-bold leading-relaxed mt-1">
-                            {evt.title || '(無標題)'}
-                        </div>
-                    </div>
-
-                    <div className="flex justify-between items-end mt-4 pt-3 border-t border-gray-200">
-                        <span className="text-sm text-gray-500 font-medium break-all mr-2">
-                            {evt.note}
-                        </span>
-                        <span className="text-sm text-gray-400 font-medium whitespace-nowrap">
-                            {userName}
-                        </span>
-                    </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start pr-8">
+                  <div className="text-xl font-bold" style={{ color: isToday ? '#3b82f6' : 'var(--foreground)' }}>
+                    {evt.date}
+                  </div>
                 </div>
-            );
+
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center px-2 py-1 rounded-lg text-lg font-bold"
+                    style={{
+                      background: isToday ? 'rgba(59, 130, 246, 0.2)' : 'var(--input-bg)',
+                      color: isToday ? '#3b82f6' : 'var(--muted)'
+                    }}
+                  >
+                    <Clock className="w-5 h-5 mr-1.5" />
+                    {evt.time ? evt.time.slice(0, 5) : '全天'}
+                  </div>
+                </div>
+
+                <div className="text-xl font-bold leading-relaxed mt-1" style={{ color: 'var(--foreground)' }}>
+                  {evt.title || '(無標題)'}
+                </div>
+              </div>
+
+              <div className="flex justify-between items-end mt-4 pt-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
+                <span className="text-sm font-medium break-all mr-2" style={{ color: 'var(--muted)' }}>
+                  {evt.note}
+                </span>
+                <span className="text-sm font-medium whitespace-nowrap" style={{ color: 'var(--muted-foreground)' }}>
+                  {userName}
+                </span>
+              </div>
+            </div>
+          );
         })}
       </div>
     );
@@ -350,74 +360,78 @@ export default function CalendarPage() {
     return (
       <div>
         {/* 月曆 Header */}
-        <div className="flex items-center justify-between mb-2 bg-white p-2 rounded-xl shadow-sm">
-            <button 
-                onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
-                className="p-2 hover:bg-gray-100 rounded-full"
-            >
-                <ChevronLeft className="w-5 h-5" />
-            </button>
-            <div className="font-bold text-lg">
-                {year} 年 {month + 1} 月
-            </div>
-            <button 
-                onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
-                className="p-2 hover:bg-gray-100 rounded-full"
-            >
-                <ChevronRight className="w-5 h-5" />
-            </button>
+        <div className="flex items-center justify-between mb-2 p-2 rounded-xl shadow-sm" style={{ background: 'var(--card-bg)' }}>
+          <button
+            onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
+            className="p-2 rounded-full"
+            style={{ color: 'var(--foreground)' }}
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <div className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>
+            {year} 年 {month + 1} 月
+          </div>
+          <button
+            onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
+            className="p-2 rounded-full"
+            style={{ color: 'var(--foreground)' }}
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
 
         {/* 星期 Header */}
-        <div className="grid grid-cols-7 text-center mb-1 font-semibold text-gray-500 text-sm">
-            <div className="text-red-500">日</div>
-            <div>一</div>
-            <div>二</div>
-            <div>三</div>
-            <div>四</div>
-            <div>五</div>
-            <div className="text-green-600">六</div>
+        <div className="grid grid-cols-7 text-center mb-1 font-semibold text-sm" style={{ color: 'var(--muted)' }}>
+          <div className="text-red-500">日</div>
+          <div>一</div>
+          <div>二</div>
+          <div>三</div>
+          <div>四</div>
+          <div>五</div>
+          <div className="text-green-600">六</div>
         </div>
 
         {/* 格子 */}
         <div className="grid grid-cols-7 gap-0.5">
-            {cells.map((cell: any) => {
-                if (cell.type === 'empty') {
-                    return <div key={cell.key} className="h-14" />;
-                }
+          {cells.map((cell: any) => {
+            if (cell.type === 'empty') {
+              return <div key={cell.key} className="h-14" />;
+            }
 
-                const dayEvents = events.filter(e => e.date === cell.dateStr);
-                const isHoliday = holidays[cell.dateStr]?.isHoliday;
-                const isToday = cell.dateStr === todayStr;
+            const dayEvents = events.filter(e => e.date === cell.dateStr);
+            const isHoliday = holidays[cell.dateStr]?.isHoliday;
+            const isToday = cell.dateStr === todayStr;
 
-                return (
-                    <div
-                        key={cell.key}
-                        onClick={() => goToListAndScroll(cell.dateStr)}
-                        className={`
-                            h-14 border rounded-lg flex flex-col items-center justify-start pt-1 cursor-pointer relative overflow-hidden transition-all
-                            ${isHoliday ? 'bg-red-50 border-red-100' : 'bg-white hover:bg-gray-50'}
+            return (
+              <div
+                key={cell.key}
+                onClick={() => goToListAndScroll(cell.dateStr)}
+                className={`h-14 border rounded-lg flex flex-col items-center justify-start pt-1 cursor-pointer relative overflow-hidden transition-all
                             ${isToday ? 'ring-2 ring-blue-500' : ''}
                         `}
-                    >
-                        <span className={`text-sm font-medium ${isHoliday ? 'text-red-600' : 'text-gray-700'}`}>
-                            {cell.val}
-                        </span>
-                        
-                        {isHoliday && (
-                            <span className="text-[9px] text-red-400 transform scale-90 truncate max-w-full">
-                                {holidays[cell.dateStr].name}
-                            </span>
-                        )}
+                style={{
+                  background: isHoliday ? 'rgba(239, 68, 68, 0.1)' : 'var(--card-bg)',
+                  borderColor: isHoliday ? 'rgba(239, 68, 68, 0.2)' : 'var(--card-border)'
+                }}
+              >
+                <span className="text-sm font-medium" style={{ color: isHoliday ? '#ef4444' : 'var(--foreground)' }}>
+                  {cell.val}
+                </span>
 
-                        <div className="flex gap-0.5 mt-auto mb-1 flex-wrap justify-center px-0.5">
-                            {dayEvents.map((_, i) => (
-                                <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                            ))}
-                        </div>
-                    </div>
-                );
-            })}
+                {isHoliday && (
+                  <span className="text-[9px] text-red-400 transform scale-90 truncate max-w-full">
+                    {holidays[cell.dateStr].name}
+                  </span>
+                )}
+
+                <div className="flex gap-0.5 mt-auto mb-1 flex-wrap justify-center px-0.5">
+                  {dayEvents.map((_, i) => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -428,55 +442,56 @@ export default function CalendarPage() {
    * -------------------------------------------------------- */
   useEffect(() => {
     if (viewMode === 'list' && !loading && events.length > 0) {
-        setTimeout(() => {
-             eventRefs.current = {}; 
-             const target = eventRefs.current[todayStr];
-             if (target) {
-                 target.scrollIntoView({ behavior: 'auto', block: 'start' });
-             } else {
-                 const future = events.find(e => e.date > todayStr);
-                 if (future && eventRefs.current[future.date]) {
-                     eventRefs.current[future.date]?.scrollIntoView({ behavior: 'auto', block: 'start' });
-                 }
-             }
-        }, 300);
+      setTimeout(() => {
+        eventRefs.current = {};
+        const target = eventRefs.current[todayStr];
+        if (target) {
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+        } else {
+          const future = events.find(e => e.date > todayStr);
+          if (future && eventRefs.current[future.date]) {
+            eventRefs.current[future.date]?.scrollIntoView({ behavior: 'auto', block: 'start' });
+          }
+        }
+      }, 300);
     }
   }, [loading, viewMode]);
 
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--page-bg)' }}>
       <div className="p-4 max-w-md mx-auto w-full flex-1 flex flex-col">
-        
+
         {/* 頂部切換按鈕 */}
         <div className="flex justify-end mb-4">
-            <button
-                onClick={() => setViewMode(viewMode === 'list' ? 'month' : 'list')}
-                className="flex items-center gap-2 px-4 py-2 bg-white border rounded-full shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-100"
-            >
-                {viewMode === 'list' ? (
-                    <>
-                        <CalendarDays className="w-4 h-4" />
-                        切換月曆模式
-                    </>
-                ) : (
-                    <>
-                        <List className="w-4 h-4" />
-                        切換列表模式
-                    </>
-                )}
-            </button>
+          <button
+            onClick={() => setViewMode(viewMode === 'list' ? 'month' : 'list')}
+            className="flex items-center gap-2 px-4 py-2 border rounded-full shadow-sm text-sm font-medium"
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
+          >
+            {viewMode === 'list' ? (
+              <>
+                <CalendarDays className="w-4 h-4" />
+                切換月曆模式
+              </>
+            ) : (
+              <>
+                <List className="w-4 h-4" />
+                切換列表模式
+              </>
+            )}
+          </button>
         </div>
 
         {loading ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400">
-                載入行程中...
-            </div>
+          <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--muted)' }}>
+            載入行程中...
+          </div>
         ) : (
-            <>
-                {viewMode === 'list' && renderListView()}
-                {viewMode === 'month' && renderMonthView()}
-            </>
+          <>
+            {viewMode === 'list' && renderListView()}
+            {viewMode === 'month' && renderMonthView()}
+          </>
         )}
       </div>
 
@@ -485,18 +500,18 @@ export default function CalendarPage() {
       {/* 動作選單 */}
       {showActionMenu && actionItem && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={closeAllModals}>
-          <div className="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-xl animate-in slide-in-from-bottom-10 fade-in duration-200" onClick={e => e.stopPropagation()}>
-            <div className="p-4 border-b text-center font-bold text-gray-700">選擇操作</div>
+          <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-xl animate-in slide-in-from-bottom-10 fade-in duration-200" style={{ background: 'var(--card-bg)' }} onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b text-center font-bold" style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>選擇操作</div>
             <div className="flex flex-col">
-              <button onClick={onClickEdit} className="flex items-center justify-center gap-2 p-4 hover:bg-gray-50 border-b text-blue-600 font-medium">
+              <button onClick={onClickEdit} className="flex items-center justify-center gap-2 p-4 border-b text-blue-500 font-medium" style={{ borderColor: 'var(--card-border)' }}>
                 <Edit className="w-5 h-5" /> 編輯行程
               </button>
-              <button onClick={onClickDelete} className="flex items-center justify-center gap-2 p-4 hover:bg-gray-50 text-red-600 font-medium">
+              <button onClick={onClickDelete} className="flex items-center justify-center gap-2 p-4 text-red-500 font-medium">
                 <Trash2 className="w-5 h-5" /> 刪除行程
               </button>
             </div>
-            <div className="p-2 bg-gray-50">
-              <button onClick={closeAllModals} className="w-full py-3 bg-white rounded-xl border shadow-sm font-bold text-gray-700">
+            <div className="p-2" style={{ background: 'var(--input-bg)' }}>
+              <button onClick={closeAllModals} className="w-full py-3 rounded-xl border shadow-sm font-bold" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>
                 取消
               </button>
             </div>
@@ -507,10 +522,10 @@ export default function CalendarPage() {
       {/* 刪除確認 */}
       {showDeleteConfirm && actionItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">確定要刪除嗎？</h3>
+          <div className="w-full max-w-sm rounded-2xl p-6 shadow-xl" style={{ background: 'var(--card-bg)' }}>
+            <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--foreground)' }}>確定要刪除嗎？</h3>
             <div className="flex gap-3 mt-6">
-              <button onClick={closeAllModals} className="flex-1 py-2.5 border rounded-xl font-medium text-gray-700 hover:bg-gray-50">取消</button>
+              <button onClick={closeAllModals} className="flex-1 py-2.5 border rounded-xl font-medium" style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>取消</button>
               <button onClick={doDelete} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700">確定刪除</button>
             </div>
           </div>
@@ -520,42 +535,45 @@ export default function CalendarPage() {
       {/* 編輯視窗 */}
       {showEditModal && actionItem && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm sm:p-6">
-          <div className="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl p-5 shadow-xl h-[70vh] sm:h-auto flex flex-col">
+          <div className="w-full max-w-md sm:rounded-2xl rounded-t-2xl p-5 shadow-xl h-[70vh] sm:h-auto flex flex-col" style={{ background: 'var(--card-bg)' }}>
             <div className="flex justify-between items-center mb-5">
-              <h3 className="text-xl font-bold text-gray-900">編輯行程</h3>
-              <button onClick={closeAllModals} className="p-1 text-gray-400 hover:bg-gray-100 rounded-full"><X className="w-6 h-6" /></button>
+              <h3 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>編輯行程</h3>
+              <button onClick={closeAllModals} className="p-1 rounded-full" style={{ color: 'var(--muted)' }}><X className="w-6 h-6" /></button>
             </div>
             <div className="flex-1 overflow-y-auto space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">日期</label>
-                <input 
-                  type="date" 
-                  value={editForm.date} 
-                  onChange={e => setEditForm({...editForm, date: e.target.value})} 
-                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all min-w-0 appearance-none" 
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted)' }}>日期</label>
+                <input
+                  type="date"
+                  value={editForm.date}
+                  onChange={e => setEditForm({ ...editForm, date: e.target.value })}
+                  className="w-full p-3 border rounded-xl outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all min-w-0 appearance-none"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">時間 (選填)</label>
-                <input 
-                  type="time" 
-                  value={editForm.time} 
-                  onChange={e => setEditForm({...editForm, time: e.target.value})} 
-                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all min-w-0 appearance-none" 
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted)' }}>時間 (選填)</label>
+                <input
+                  type="time"
+                  value={editForm.time}
+                  onChange={e => setEditForm({ ...editForm, time: e.target.value })}
+                  className="w-full p-3 border rounded-xl outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all min-w-0 appearance-none"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">項目 (標題)</label>
-                <input 
-                  type="text" 
-                  value={editForm.title} 
-                  onChange={e => setEditForm({...editForm, title: e.target.value})} 
-                  className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all" 
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted)' }}>項目 (標題)</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={e => setEditForm({ ...editForm, title: e.target.value })}
+                  className="w-full p-3 border rounded-xl outline-none ring-2 ring-transparent focus:ring-blue-500 transition-all"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                 />
               </div>
             </div>
-            <div className="flex gap-3 mt-6 pt-4 border-t">
-              <button onClick={closeAllModals} className="flex-1 py-3 border rounded-xl font-medium text-gray-700 hover:bg-gray-50">取消</button>
+            <div className="flex gap-3 mt-6 pt-4 border-t" style={{ borderColor: 'var(--card-border)' }}>
+              <button onClick={closeAllModals} className="flex-1 py-3 border rounded-xl font-medium" style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>取消</button>
               <button onClick={doUpdate} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2"><Check className="w-5 h-5" /> 儲存變更</button>
             </div>
           </div>

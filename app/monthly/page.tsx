@@ -30,7 +30,7 @@ export default function MonthlyPage() {
     // 確保在 Client 端執行時，取得當下真正的時間
     const now = new Date();
     setTodayDate(now);
-    
+
     // 校正當前月份（若使用者剛好跨月開啟）
     setCurrent({
       year: now.getFullYear(),
@@ -159,30 +159,32 @@ export default function MonthlyPage() {
   }
 
   return (
-    <div className="p-4 max-w-md mx-auto">
+    <div className="p-4 max-w-md mx-auto" style={{ background: 'var(--page-bg)' }}>
       {/* 年月 + 上下月切換 */}
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={prevMonth}
-          className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100"
+          className="p-3 border rounded-full shadow-sm"
+          style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
         >
           <ChevronLeft className="w-6 h-6 stroke-[3]" />
         </button>
 
-        <div className="text-xl font-bold">
+        <div className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
           {current.year} 年 {current.month + 1} 月
         </div>
 
         <button
           onClick={nextMonth}
-          className="p-3 border rounded-full bg-white shadow-sm hover:bg-gray-50 active:bg-gray-100"
+          className="p-3 border rounded-full shadow-sm"
+          style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
         >
           <ChevronRight className="w-6 h-6 stroke-[3]" />
         </button>
       </div>
 
       {/* 星期列 */}
-      <div className="grid grid-cols-7 text-center text-sm font-semibold text-gray-600 mb-2">
+      <div className="grid grid-cols-7 text-center text-sm font-semibold mb-2" style={{ color: 'var(--muted)' }}>
         <div>一</div>
         <div>二</div>
         <div>三</div>
@@ -199,7 +201,8 @@ export default function MonthlyPage() {
             return (
               <div
                 key={idx}
-                className="h-12 border rounded-lg bg-gray-50 shadow-sm"
+                className="h-12 border rounded-lg shadow-sm"
+                style={{ background: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
               ></div>
             );
           }
@@ -221,20 +224,19 @@ export default function MonthlyPage() {
               key={idx}
               href={`/today?date=${dateStr}`}
               className={`h-12 flex flex-col items-center justify-center border rounded-lg shadow-sm
-                ${
-                  isToday
-                    ? 'bg-blue-600 border-blue-700 text-white font-bold'
-                    : 'bg-white'
+                ${isToday
+                  ? 'bg-blue-600 border-blue-700 text-white font-bold'
+                  : ''
                 }
               `}
+              style={isToday ? {} : { background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
             >
               <div className="leading-none">{day}</div>
 
               {sum !== 0 && (
                 <div
-                  className={`text-[10px] leading-none mt-0.5 ${
-                    isToday ? 'text-white' : amountColor(sum)
-                  }`}
+                  className={`text-[10px] leading-none mt-0.5 ${isToday ? 'text-white' : amountColor(sum)
+                    }`}
                 >
                   {sum.toLocaleString()}
                 </div>
@@ -245,25 +247,25 @@ export default function MonthlyPage() {
       </div>
 
       {/* 底部三欄 */}
-      <div className="mt-6 p-4 bg-white shadow-sm border rounded-lg text-sm space-y-2">
+      <div className="mt-6 p-4 shadow-sm border rounded-lg text-sm space-y-2" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
         <div className="flex justify-between">
-          <span className="text-gray-600">本月預算</span>
-          <span className="font-semibold">{(budget || 0).toLocaleString()}</span>
+          <span style={{ color: 'var(--muted)' }}>本月預算</span>
+          <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{(budget || 0).toLocaleString()}</span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-gray-600">目前花費</span>
+          <span style={{ color: 'var(--muted)' }}>目前花費</span>
           <span className={`font-semibold ${amountColor(monthTotal)}`}>
             {monthTotal.toLocaleString()}
           </span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-gray-600">剩餘金額</span>
+          <span style={{ color: 'var(--muted)' }}>剩餘金額</span>
           <span
-            className={`font-bold ${
-              budget - monthTotal < 0 ? 'text-red-600' : 'text-gray-900'
-            }`}
+            className={`font-bold ${budget - monthTotal < 0 ? 'text-red-600' : ''
+              }`}
+            style={budget - monthTotal >= 0 ? { color: 'var(--foreground)' } : {}}
           >
             {(budget - monthTotal).toLocaleString()}
           </span>

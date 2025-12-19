@@ -129,44 +129,46 @@ export default function SettingsPage() {
   // 畫面
   // -----------------------------
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-lg font-semibold mb-4">設定</h1>
+    <div className="p-4 max-w-md mx-auto" style={{ background: 'var(--page-bg)' }}>
+      <h1 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>設定</h1>
 
-      {loading && <p className="text-sm text-gray-500">載入中…</p>}
+      {loading && <p className="text-sm" style={{ color: 'var(--muted)' }}>載入中…</p>}
 
       {!loading && (
         <>
           {/* 暱稱設定 */}
           <section className="mb-8">
-            <h2 className="text-sm font-semibold mb-2">userId 顯示名稱</h2>
-            <p className="text-xs text-gray-500 mb-3">
+            <h2 className="text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>userId 顯示名稱</h2>
+            <p className="text-xs mb-3" style={{ color: 'var(--muted)' }}>
               這裡可以設定「哪一個 userId 要顯示成什麼名稱」。
             </p>
 
             <form onSubmit={handleSaveName} className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-600 mb-1">userId</label>
+                <label className="block text-xs mb-1" style={{ color: 'var(--muted)' }}>userId</label>
                 <input
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
                   className="w-full border rounded px-2 py-1 text-sm"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                   placeholder="請輸入 userId"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-gray-600 mb-1">顯示名稱</label>
+                <label className="block text-xs mb-1" style={{ color: 'var(--muted)' }}>顯示名稱</label>
                 <input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="w-full border rounded px-2 py-1 text-sm"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                   placeholder="例如：我、老婆、小孩…"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-black text-white text-sm py-2 rounded-md"
+                className="w-full bg-blue-600 text-white text-sm py-2 rounded-md"
               >
                 儲存
               </button>
@@ -174,16 +176,17 @@ export default function SettingsPage() {
 
             {/* 列表 */}
             <div className="mt-4">
-              <h3 className="text-sm font-semibold mb-2">目前設定列表</h3>
+              <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>目前設定列表</h3>
               {nameList.length === 0 && (
-                <p className="text-xs text-gray-500">尚未設定任何 userId。</p>
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>尚未設定任何 userId。</p>
               )}
 
               <ul className="space-y-1 text-xs">
                 {nameList.map((item) => (
                   <li
                     key={item.user_id}
-                    className="flex justify-between border-b py-1 text-gray-700"
+                    className="flex justify-between border-b py-1"
+                    style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}
                   >
                     <span className="break-all">{item.user_id}</span>
                     <span className="font-semibold">{item.display_name}</span>
@@ -195,23 +198,24 @@ export default function SettingsPage() {
 
           {/* 預算設定 */}
           <section className="mb-8">
-            <h2 className="text-sm font-semibold mb-2">每月預算（全站共用）</h2>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>每月預算（全站共用）</h2>
 
             <form onSubmit={handleSaveBudget} className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-600 mb-1">預算金額</label>
+                <label className="block text-xs mb-1" style={{ color: 'var(--muted)' }}>預算金額</label>
                 <input
                   type="number"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value === '' ? '' : Number(e.target.value))}
                   className="w-full border rounded px-2 py-1 text-sm"
+                  style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }}
                   placeholder="請輸入本月預算"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-black text-white text-sm py-2 rounded-md"
+                className="w-full bg-blue-600 text-white text-sm py-2 rounded-md"
               >
                 儲存預算
               </button>
