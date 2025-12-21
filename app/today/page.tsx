@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
   Car,
@@ -146,6 +147,7 @@ function CategoryIcon({ category }: { category: string | null }) {
 }
 
 export default function TodayPage() {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState<string>(getToday());
@@ -168,6 +170,16 @@ export default function TodayPage() {
     note: string;
     category: string;
   }>({ time: '', amount: '', note: '', category: '' });
+
+  /** -----------------------------
+   * 讀取 URL 參數中的 date（從月曆點擊過來時）
+   * ----------------------------- */
+  useEffect(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      setCurrentDate(dateParam);
+    }
+  }, [searchParams]);
 
   /** -----------------------------
    * 暱稱 map：從 Supabase 讀取 user_names
