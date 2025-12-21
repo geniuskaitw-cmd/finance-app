@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
@@ -146,7 +146,7 @@ function CategoryIcon({ category }: { category: string | null }) {
   return <CircleHelp className="w-8 h-8" />;
 }
 
-export default function TodayPage() {
+function TodayPageContent() {
   const searchParams = useSearchParams();
   const [data, setData] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -756,5 +756,13 @@ export default function TodayPage() {
       )}
 
     </div>
+  );
+}
+
+export default function TodayPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--page-bg)' }}><p style={{ color: 'var(--muted)' }}>載入中...</p></div>}>
+      <TodayPageContent />
+    </Suspense>
   );
 }
